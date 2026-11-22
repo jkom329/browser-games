@@ -35,6 +35,14 @@
       padding: 7px 10px; cursor: pointer; text-transform: uppercase;
     }
     .viewbar button:hover, .clearbtn:hover { background: var(--ink); color: var(--panel); }
+    .phasebar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; border: 2px solid var(--ink); background: var(--panel); box-shadow: 8px 8px 0 var(--shadow); padding: 10px 12px; }
+    .phasebar-label { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .phasebtns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .phasebtns button { border: 1.5px solid var(--ink); background: var(--panel); color: var(--ink); font: inherit; font-size: 11px; font-weight: 600; letter-spacing: .03em; padding: 7px 10px; cursor: pointer; text-transform: uppercase; }
+    .phasebtns button:hover { background: var(--ink); color: var(--panel); }
+    .phasebtns button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .phaseblurb { flex-basis: 100%; margin: 2px 0 0; font-size: 12px; line-height: 1.6; color: var(--muted); }
+    .phaseblurb strong { color: var(--ink); }
     .hint { position: absolute; right: 10px; top: 10px; background: rgba(16,20,16,.72); color: #eef4eb; font-size: 11px; padding: 6px 9px; pointer-events: none; }
     .panel { border: 2px solid var(--ink); background: var(--panel); box-shadow: 8px 8px 0 var(--shadow); }
     .panel-head { padding: 13px 15px 10px; border-bottom: 1px solid var(--line); }
@@ -78,7 +86,14 @@
       <a href="../">← PORTFOLIO</a>
       <h1>Basement Finishing</h1>
     </header>
-    <p class="sub">Phase 1: the bathroom. A walkable 3D model of the basement from the Veridian foundation plan (sheet C7) — the rest of the basement is still bare slab and joists, the bathroom is shown finished. Click anything on the shopping list and it lights up in the model where it belongs. Concept visualization, not a construction drawing — field-verify everything.</p>
+    <p class="sub">Phase 1: the bathroom. A walkable 3D model of the basement from the Veridian foundation plan (sheet C7) — the rest of the basement is still bare slab and joists. Step through the build phases below (or press Play) and watch the bathroom come together; click anything on the shopping list and it lights up in the model where it belongs. Concept visualization, not a construction drawing — field-verify everything.</p>
+
+    <div class="phasebar" aria-label="Build phases">
+      <span class="phasebar-label">Build phases</span>
+      <div class="phasebtns" id="phaseBtns"></div>
+      <button type="button" class="clearbtn" id="phasePlay">&#9654; Play</button>
+      <p class="phaseblurb" id="phaseBlurb"></p>
+    </div>
 
     <div class="layout">
       <div class="stage">
@@ -264,6 +279,27 @@
     bathWall(6.9, 7.2, 0.3, -10.05, 3.6, 3.55);           // south, west of the door
     bathWall(2.5, 0.5, 0.3, -5.35, 6.95, 3.55);           // header over the door
     box(9.9, 0.18, 7.4, ceilMat, -8.75, 7.29, 0, 'drywall'); // bathroom ceiling
+    // Stud framing: shown in the framing and rough-in phases, then covered by drywall
+    var frameMat = mat(0xa8845c, 0.85);
+    function frameWall(len, cx, cz, alongZ) {
+      if (alongZ) {
+        box(0.29, 0.13, len, frameMat, cx, 0.07, cz, 'studs');
+        box(0.29, 0.13, len, frameMat, cx, 7.13, cz, 'studs');
+        var n = Math.max(2, Math.round(len / 1.33));
+        for (var i = 0; i <= n; i++) box(0.29, 6.95, 0.13, frameMat, cx, 3.6, cz - len / 2 + (len * i) / n, 'studs');
+      } else {
+        box(len, 0.13, 0.29, frameMat, cx, 0.07, cz, 'studs');
+        box(len, 0.13, 0.29, frameMat, cx, 7.13, cz, 'studs');
+        var n2 = Math.max(2, Math.round(len / 1.33));
+        for (var j = 0; j <= n2; j++) box(0.13, 6.95, 0.29, frameMat, cx - len / 2 + (len * j) / n2, 3.6, cz, 'studs');
+      }
+    }
+    frameWall(7.3, -13.55, 0, true);        // west
+    frameWall(9.9, -8.75, -3.55, false);    // north
+    frameWall(7.3, -3.95, 0, true);         // east (post at -4,0 rides inside this wall)
+    frameWall(6.8, -10.1, 3.55, false);     // south, west of the door
+    box(2.5, 0.5, 0.29, frameMat, -5.35, 6.95, 3.55, 'studs'); // header over the door
+    frameWall(3.3, -11.9, 1.55, false);     // shower return
     // Baseboards
     var trimMat = mat(0xf4f2ea, 0.8);
     box(9.3, 0.45, 0.07, trimMat, -8.75, 0.32, -3.36, 'trim');
@@ -316,8 +352,8 @@
     var vlight = box(1.9, 0.3, 0.2, mat(0xfff1cf, 0.4, { emissive: 0x665522 }), -5.3, 6.3, -3.3, 'vanitylight');
     box(0.32, 0.48, 0.06, mat(0xf5f6f2, 0.5), -4.32, 3.9, -3.36, 'gfci');
     // Fan over the fixture cluster + housing above the ceiling
-    box(1.15, 0.09, 1.15, mat(0xf5f6f2, 0.5), -8.5, 7.17, -0.8, 'fan');
-    cyl(0.55, 0.55, 0.75, mat(0x9ba09a, 0.45, { metalness: 0.5 }), -8.5, 7.65, -0.8, 'fan');
+    var fanGrille = box(1.15, 0.09, 1.15, mat(0xf5f6f2, 0.5), -8.5, 7.17, -0.8, 'fan');
+    var fanHousing = cyl(0.55, 0.55, 0.75, mat(0x9ba09a, 0.45, { metalness: 0.5 }), -8.5, 7.65, -0.8, 'fan');
     // Duct: rise, then one joist bay straight across, over both beams, out the east rim joist
     var ductMat = mat(0xb7bbb4, 0.35, { metalness: 0.6 });
     var collar = cyl(0.19, 0.19, 0.35, ductMat, -8.5, 7.95, -0.8, 'collar');
@@ -329,7 +365,7 @@
     }
     var e2 = new THREE.Mesh(new THREE.SphereGeometry(0.19, 14, 12), ductMat); e2.position.set(16.9, 8.35, -0.8); scene.add(e2); reg('elbows', e2);
     box(0.55, 0.65, 0.65, mat(0x8f948c, 0.5, { metalness: 0.4 }), 17.95, 8.35, -0.8, 'ventcap');
-    label('EXHAUST DUCT', 4.2, 9.45, -0.8, 6);
+    var ductLabel = label('EXHAUST DUCT', 4.2, 9.45, -0.8, 6);
     label('BATHROOM — PHASE 1', -8.75, 8.7, 0, 6);
     // Door (shown open) + beveled transition strip + timer switch
     var door = box(2.45, 6.6, 0.1, mat(0x8a6a48, 0.65), -6.05, 3.3, 4.6, 'door'); door.rotation.y = 0.72;
@@ -383,6 +419,82 @@
     registry['paint'] = registry['drywall'];
     registry['grout'] = registry['tile'];
 
+    // ---------- Build phases: step the bathroom from bare slab to finished ----------
+    var PHASES = [
+      { short: 'Now', name: 'As it is now', blurb: 'Bare slab and joists. The plumbing rough-in is under the concrete and chalk lines mark the bathroom layout. Moisture test, level check and drain check come first.' },
+      { short: 'Framing', name: 'Framing', blurb: 'The bathroom walls in 2x4 — dry-fit unattached first, the fan position picked with the walls up, then the permit, then anchored. All interior walls, no foam. The northeast post rides inside the east wall.' },
+      { short: 'Rough-ins', name: 'Rough-ins', blurb: 'Fan housing and the 4-inch duct in one joist bay, straight across over both beams to the rim joist, plus plumbing and electrical. Then the rough-in inspection — the first inspection.' },
+      { short: 'Drywall', name: 'Drywall & paint', blurb: 'Walls and ceiling closed up once the rough-in passes, then primer and bathroom paint.' },
+      { short: 'Tile', name: 'Shower & tile', blurb: 'Shower tray in, waterproof membrane on the shower walls, tile on the shower and curb, and the floor tile over Ditra — about 5/8 in over the slab.' },
+      { short: 'Finish', name: 'Fixtures & finish', blurb: 'Toilet, vanity and mirror, shower trim and glass, door and casing, baseboards, fan grille on its timer, beveled transition strip at the door. Then the final inspection.' }
+    ];
+    // Which phases each registered mesh is visible in (later entries win for shared meshes:
+    // the solid walls sit in both 'studs' and 'drywall', so 'drywall' decides for them)
+    var KEY_PHASES = [
+      ['chalk', 1, 3],
+      ['studs', 2, 3],
+      ['drywall', 4, 6],
+      ['fan', 3, 6], ['collar', 3, 6], ['duct', 3, 6], ['elbows', 3, 6], ['tape', 3, 6], ['ventcap', 3, 6],
+      ['tray', 5, 6], ['membrane', 5, 6], ['tile', 5, 6], ['ditra', 5, 6], ['drain', 5, 6],
+      ['toilet', 6, 6], ['vanity', 6, 6], ['vanitylight', 6, 6], ['showertrim', 6, 6], ['gfci', 6, 6],
+      ['door', 6, 6], ['transition', 6, 6], ['trim', 6, 6], ['timer', 6, 6]
+    ];
+    var _phaseMap = new Map();
+    KEY_PHASES.forEach(function (kp) {
+      (registry[kp[0]] || []).forEach(function (ms) { _phaseMap.set(ms, [kp[1], kp[2]]); });
+    });
+    _phaseMap.set(fanGrille, [6, 6]);   // the grille is a finish item; the housing above it is rough-in
+    _phaseMap.set(glass, [6, 6]);
+    _phaseMap.set(ductLabel, [3, 6]);
+    var phaseRanges = [];
+    _phaseMap.forEach(function (range, ms) { phaseRanges.push({ m: ms, from: range[0], to: range[1] }); });
+    // Clicking a shopping-list item jumps the build to the phase where that item belongs
+    var itemPhase = {
+      plastic: 1, chalk: 1,
+      studs: 2, plates: 2, shims: 2,
+      fan: 3, duct: 3, elbows: 3, collar: 3, tape: 3, caps: 3, ventcap: 3,
+      drywall: 4, paint: 4,
+      tray: 5, membrane: 5, ditra: 5, tile: 5, grout: 5, drain: 5,
+      toilet: 6, vanity: 6, showertrim: 6, gfci: 6, vanitylight: 6, timer: 6, door: 6, transition: 6, trim: 6
+    };
+    var curPhase = 6;
+    var phaseBtnsEl = document.getElementById('phaseBtns');
+    var phaseBlurbEl = document.getElementById('phaseBlurb');
+    var phaseBtnEls = PHASES.map(function (p, i) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = (i + 1) + ' · ' + p.short;
+      b.addEventListener('click', function () { stopPlay(); setPhase(i + 1); });
+      phaseBtnsEl.appendChild(b);
+      return b;
+    });
+    function setPhase(n) {
+      curPhase = Math.max(1, Math.min(6, n));
+      phaseRanges.forEach(function (pr) { pr.m.visible = curPhase >= pr.from && curPhase <= pr.to; });
+      phaseBtnEls.forEach(function (b, i) { b.classList.toggle('on', i + 1 === curPhase); });
+      var p = PHASES[curPhase - 1];
+      phaseBlurbEl.innerHTML = '<strong>Phase ' + curPhase + ' of 6 — ' + p.name + '.</strong> ' + p.blurb;
+      if (typeof selected !== 'undefined' && selected) {
+        var anyVis = (registry[selected] || []).some(function (ms) { return ms.visible; });
+        if (!anyVis) clearHighlight();
+      }
+    }
+    var playTimer = null;
+    function stopPlay() {
+      if (playTimer) { clearInterval(playTimer); playTimer = null; }
+      document.getElementById('phasePlay').innerHTML = '&#9654; Play';
+    }
+    document.getElementById('phasePlay').addEventListener('click', function () {
+      if (playTimer) { stopPlay(); return; }
+      if (curPhase >= 6) setPhase(1);
+      this.innerHTML = '&#10074;&#10074; Pause';
+      playTimer = setInterval(function () {
+        if (curPhase >= 6) { stopPlay(); return; }
+        setPhase(curPhase + 1);
+      }, 2100);
+    });
+    setPhase(6);
+
     var listEl = document.getElementById('matList');
     var whereBox = document.getElementById('whereBox');
     var itemByKey = {};
@@ -425,6 +537,8 @@
       plastic: [-4.6, 6.6, 7.2, -10.5, 0.3, -0.5], grout: [-4.6, 6.6, 7.2, -11, 0.3, -1]
     };
     function selectKey(key, fromList) {
+      var ip = itemPhase[key];
+      if (ip && ip !== curPhase) setPhase(ip);
       clearHighlight();
       selected = key;
       if (fromList && itemViews[key]) {
@@ -438,9 +552,10 @@
           ms.material.emissive.setHex(0xb3541e);
         }
       });
-      if (meshes.length) {
+      var visMeshes = meshes.filter(function (ms) { return ms.visible; });
+      if (visMeshes.length) {
         var bb = new THREE.Box3();
-        meshes.forEach(function (ms) { bb.expandByObject(ms); });
+        visMeshes.forEach(function (ms) { bb.expandByObject(ms); });
         boxHelper = new THREE.Box3Helper(bb, 0xff7a2a);
         scene.add(boxHelper);
       }
@@ -504,7 +619,7 @@
         rc.setFromCamera(nd, camera);
         var hits = rc.intersectObjects(scene.children, false);
         for (var i = 0; i < hits.length; i++) {
-          if (hits[i].object.userData.key) { selectKey(hits[i].object.userData.key, false); break; }
+          if (hits[i].object.visible && hits[i].object.userData.key) { selectKey(hits[i].object.userData.key, false); break; }
         }
       }
     });
