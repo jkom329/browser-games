@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="icon" href="data:," />
+  <title>Basement Remodel — Bathroom First</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+    :root {
+      color-scheme: light dark;
+      --page: #e9ece7; --panel: #f7f8f5; --ink: #171b17; --muted: #566057;
+      --line: #a6aea5; --accent: #b3541e; --shadow: rgba(18,27,20,.18);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --page: #101410; --panel: #171d18; --ink: #eef4eb; --muted: #aab5a8; --line: #424d42; --accent: #ff9a5c; --shadow: rgba(0,0,0,.38); }
+    }
+    html, body { margin: 0; min-height: 100%; }
+    body { background: var(--page); color: var(--ink); font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+    .shell { max-width: 1460px; margin: 0 auto; padding: clamp(12px, 2vw, 26px); }
+    header.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 22px; margin-bottom: 14px; }
+    header.top a { color: var(--muted); text-decoration: none; font-size: 12px; letter-spacing: .08em; }
+    header.top a:hover { color: var(--ink); }
+    h1 { margin: 0; font-size: clamp(22px, 3.4vw, 34px); letter-spacing: -.03em; text-transform: uppercase; }
+    .sub { color: var(--muted); font-size: 12.5px; line-height: 1.6; max-width: 76ch; margin: 6px 0 0; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); gap: 18px; align-items: start; }
+    .stage { position: relative; border: 2px solid var(--ink); background: #20241f; box-shadow: 8px 8px 0 var(--shadow); }
+    #view { display: block; width: 100%; aspect-ratio: 16 / 10.4; touch-action: none; cursor: grab; }
+    #view:active { cursor: grabbing; }
+    .viewbar { position: absolute; left: 10px; bottom: 10px; display: flex; flex-wrap: wrap; gap: 7px; }
+    .viewbar button, .clearbtn {
+      border: 1.5px solid var(--ink); background: var(--panel); color: var(--ink);
+      font: inherit; font-size: 11px; font-weight: 600; letter-spacing: .04em;
+      padding: 7px 10px; cursor: pointer; text-transform: uppercase;
+    }
+    .viewbar button:hover, .clearbtn:hover { background: var(--ink); color: var(--panel); }
+    .hint { position: absolute; right: 10px; top: 10px; background: rgba(16,20,16,.72); color: #eef4eb; font-size: 11px; padding: 6px 9px; pointer-events: none; }
+    .panel { border: 2px solid var(--ink); background: var(--panel); box-shadow: 8px 8px 0 var(--shadow); }
+    .panel-head { padding: 13px 15px 10px; border-bottom: 1px solid var(--line); }
+    .panel-head h2 { margin: 0 0 4px; font-size: 15px; letter-spacing: .02em; text-transform: uppercase; }
+    .panel-head p { margin: 0; color: var(--muted); font-size: 11.5px; line-height: 1.55; }
+    .where { padding: 11px 15px; border-bottom: 1px solid var(--line); font-size: 12px; line-height: 1.6; min-height: 62px; }
+    .where strong { display: block; font-size: 12.5px; margin-bottom: 2px; }
+    .where .tag { color: var(--accent); font-weight: 600; text-transform: uppercase; font-size: 10.5px; letter-spacing: .09em; }
+    .list { max-height: 560px; overflow-y: auto; padding: 6px 0 10px; }
+    .group-title { padding: 12px 15px 4px; font-size: 10.5px; font-weight: 600; letter-spacing: .13em; color: var(--muted); text-transform: uppercase; }
+    .item {
+      display: block; width: 100%; text-align: left; border: 0; background: transparent; color: var(--ink);
+      font: inherit; font-size: 12.5px; line-height: 1.45; padding: 7px 15px 7px 26px; position: relative; cursor: pointer;
+    }
+    .item::before { content: ""; position: absolute; left: 15px; top: 13px; width: 5px; height: 5px; background: var(--line); }
+    .item:hover { background: rgba(127,127,127,.09); }
+    .item.sel { background: rgba(179,84,30,.14); }
+    .item.sel::before { background: var(--accent); }
+    .item .qty { color: var(--muted); font-size: 11.5px; }
+    .item .flag { color: var(--accent); font-size: 10.5px; font-weight: 600; letter-spacing: .05em; }
+    .seq { margin-top: 18px; border: 2px solid var(--ink); background: var(--panel); box-shadow: 8px 8px 0 var(--shadow); padding: 14px 16px; }
+    .seq h2 { margin: 0 0 10px; font-size: 14px; text-transform: uppercase; letter-spacing: .03em; }
+    .steps { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; font-size: 11.5px; }
+    .step { border: 1px solid var(--line); padding: 6px 9px; }
+    .step b { color: var(--accent); }
+    .arrow { color: var(--muted); }
+    .notes { margin-top: 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+    .note { border: 1px solid var(--line); background: var(--panel); padding: 12px 14px; font-size: 12px; line-height: 1.65; }
+    .note h3 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+    .note p { margin: 0; color: var(--muted); }
+    footer { margin-top: 20px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .list { max-height: 420px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <a href="../">← PORTFOLIO</a>
+      <h1>Basement Remodel</h1>
+    </header>
+    <p class="sub">Phase 1: the bathroom. A walkable 3D model of the basement from the Veridian foundation plan (sheet C7) — the rest of the basement is still bare slab and joists, the bathroom is shown finished. Click anything on the shopping list and it lights up in the model where it belongs. Concept visualization, not a construction drawing — field-verify everything.</p>
+
+    <div class="layout">
+      <div class="stage">
+        <canvas id="view" aria-label="3D walkthrough of the basement with the bathroom finished"></canvas>
+        <div class="hint">Drag to look · WASD / arrows to walk · Click a part of the model too</div>
+        <div class="viewbar">
+          <button type="button" data-view="overview">Overview</button>
+          <button type="button" data-view="door">Bathroom door</button>
+          <button type="button" data-view="inside">Inside bathroom</button>
+          <button type="button" data-view="duct">Duct run</button>
+          <button type="button" data-view="mech">Mechanicals</button>
+        </div>
+      </div>
+
+      <aside class="panel" aria-label="Materials shopping list">
+        <div class="panel-head">
+          <h2>Shopping list — bathroom</h2>
+          <p>Quantities are planning estimates unless they're from the settled duct buy list. Click an item to find it in the model.</p>
+        </div>
+        <div class="where" id="whereBox">
+          <span class="tag">Where it goes</span>
+          <strong>Nothing selected</strong>
+          Pick a material and it will pulse orange in the 3D model.
+        </div>
+        <div class="list" id="matList"></div>
+        <div style="padding: 0 15px 13px;">
+          <button type="button" class="clearbtn" id="clearSel">Clear highlight</button>
+        </div>
+      </aside>
+    </div>
+
+    <section class="seq" aria-label="Order of work">
+      <h2>Order of work</h2>
+      <div class="steps">
+        <span class="step"><b>1</b> Moisture test</span><span class="arrow">→</span>
+        <span class="step"><b>2</b> Level check</span><span class="arrow">→</span>
+        <span class="step"><b>3</b> Drain check</span><span class="arrow">→</span>
+        <span class="step"><b>4</b> Chalk lines + dry-fit framing</span><span class="arrow">→</span>
+        <span class="step"><b>5</b> Permit</span><span class="arrow">→</span>
+        <span class="step"><b>6</b> Rough-ins: duct, plumbing, electrical</span><span class="arrow">→</span>
+        <span class="step"><b>7</b> Rough-in inspection</span><span class="arrow">→</span>
+        <span class="step"><b>8</b> Drywall + tile</span><span class="arrow">→</span>
+        <span class="step"><b>9</b> Fixtures + trim</span><span class="arrow">→</span>
+        <span class="step"><b>10</b> Final inspection</span>
+      </div>
+    </section>
+
+    <section class="notes" aria-label="Settled decisions">
+      <div class="note"><h3>Exhaust — settled</h3><p>One fan only (~80 CFM, audible white-noise type like the house fans, on a timer). It doubles as whole-basement air dilution for litter-box odor. 4-inch rigid duct in one joist bay, straight across, passing over the beams — never cut or notch a beam — out the rim joist to a dampered cap.</p></div>
+      <div class="note"><h3>Floor heights — settled</h3><p>The bathroom floor stays intentionally lower than the future rest-of-basement floor, as water containment, with a beveled transition strip at the door. Flange and drain are set to the bathroom's own finished height (tile + Ditra ≈ 5/8 in over the slab).</p></div>
+      <div class="note"><h3>Shower — one open call</h3><p>Tiled shower, decided. Mortar bed vs a pre-sloped foam tray (Schluter Kerdi) is still open — it waits on the drain check (drain type and position, gravity vs ejector).</p></div>
+      <div class="note"><h3>Permit timing</h3><p>Framing gets dry-fit first (stood up, unattached) and the fan position is picked then, over the fixture cluster. Permit after dry-fit, before anything is anchored, drilled, or cut. First inspection is the rough-in inspection.</p></div>
+    </section>
+
+    <footer>Layout follows sheet C7 of the Veridian Maybeck Cottage foundation plan (1207 Wild Willow Way): 3/4 bath rough-in by the stairs, water heater and softener just northeast of it, sump in the southwest corner, garage unexcavated to the east. Joists run east–west; beams run north–south and hang below the joists; steel posts are 3½ in. The northeast post rides the bathroom wall line and fits inside the 2×4 wall — frame either side of it, never drill into it.</footer>
+  </div>
+
+  <script type="importmap">
+    { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+
+    var canvas = document.getElementById('view');
+    var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    var scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x232823);
+    scene.fog = new THREE.Fog(0x232823, 55, 120);
+    var camera = new THREE.PerspectiveCamera(68, 16 / 10.4, 0.1, 300);
+
+    scene.add(new THREE.HemisphereLight(0xf2f5ee, 0x3a423a, 0.85));
+    var keyLight = new THREE.DirectionalLight(0xffffff, 0.55);
+    keyLight.position.set(18, 26, 10);
+    scene.add(keyLight);
+    function workLight(x, y, z, i) { var p = new THREE.PointLight(0xffe9c4, i || 30, 34, 1.6); p.position.set(x, y, z); scene.add(p); }
+    workLight(-8, 7.4, -6, 26); workLight(8, 7.4, 8, 26); workLight(-8.6, 6.6, 0, 14);
+
+    // Registry: material key -> array of meshes to highlight
+    var registry = {};
+    function reg(key, mesh) {
+      if (!registry[key]) registry[key] = [];
+      registry[key].push(mesh);
+      mesh.userData.key = key;
+    }
+    function mat(color, rough, extra) {
+      var m = new THREE.MeshStandardMaterial(Object.assign({ color: color, roughness: rough == null ? 0.9 : rough, metalness: 0.02 }, extra || {}));
+      return m;
+    }
+    function box(w, h, d, material, x, y, z, key) {
+      var ms = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
+      ms.position.set(x, y, z);
+      scene.add(ms);
+      if (key) reg(key, ms);
+      return ms;
+    }
+    function cyl(rt, rb, h, material, x, y, z, key, seg) {
+      var ms = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg || 22), material);
+      ms.position.set(x, y, z);
+      scene.add(ms);
+      if (key) reg(key, ms);
+      return ms;
+    }
+    function label(text, x, y, z, scale) {
+      var c = document.createElement('canvas'); c.width = 512; c.height = 96;
+      var g = c.getContext('2d');
+      g.fillStyle = 'rgba(14,18,14,0.66)'; g.fillRect(0, 0, 512, 96);
+      g.font = '600 40px "IBM Plex Mono", monospace'; g.fillStyle = '#eef4eb'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText(text, 256, 50);
+      var tex = new THREE.CanvasTexture(c);
+      var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+      sp.position.set(x, y, z);
+      sp.scale.set((scale || 6), (scale || 6) * 96 / 512, 1);
+      scene.add(sp);
+      return sp;
+    }
+    function tileTexture(base, grout, n) {
+      var c = document.createElement('canvas'); c.width = c.height = 256;
+      var g = c.getContext('2d');
+      g.fillStyle = grout; g.fillRect(0, 0, 256, 256);
+      var s = 256 / n;
+      g.fillStyle = base;
+      for (var i = 0; i < n; i++) for (var j = 0; j < n; j++) g.fillRect(i * s + 2, j * s + 2, s - 4, s - 4);
+      var tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+
+    // ---------- Basement shell: 34 ft (x) by 40 ft (z), 8 ft walls. North (back) is -z. ----------
+    var concrete = mat(0x9aa096, 0.97);
+    var concreteDark = mat(0x83867f, 0.97);
+    var slabTex = tileTexture('#a3a69e', '#8f928a', 8); slabTex.repeat.set(8, 10);
+    var slab = new THREE.Mesh(new THREE.BoxGeometry(34, 0.2, 40), new THREE.MeshStandardMaterial({ map: slabTex, roughness: 0.97 }));
+    slab.position.set(0, -0.1, 0); scene.add(slab);
+    // Foundation walls
+    box(34, 8, 0.7, concrete, 0, 4, -20.35);
+    box(34, 8, 0.7, concrete, 0, 4, 20.35);
+    box(0.7, 8, 40, concrete, -17.35, 4, 0);
+    box(0.7, 8, 40, concrete, 17.35, 4, 0);
+    // Joists run east-west (along x), spaced 16 in, band y 8..8.75
+    var joistMat = mat(0x8a6f4d, 0.85);
+    for (var jz = -19.9; jz <= 19.4; jz += 1.333) {
+      box(34, 0.75, 0.14, joistMat, 0, 8.37, jz);
+    }
+    // Beams run north-south, hung BELOW the joists (never cut or notch)
+    var beamMat = mat(0x6e5638, 0.85);
+    box(0.35, 0.9, 40, beamMat, -4, 7.55, 0);
+    box(0.35, 0.9, 40, beamMat, 6, 7.55, 0);
+    // Steel posts 3.5 in dia under the beams
+    var postMat = mat(0x3c4145, 0.6, { metalness: 0.5 });
+    [-4, 6].forEach(function (bx) {
+      [-12, 0, 12].forEach(function (pz) { cyl(0.146, 0.146, 7.1, postMat, bx, 3.55, pz, null, 14); });
+    });
+    // Stairs along the west wall
+    var stairMat = mat(0x7d7f78, 0.95);
+    for (var s = 0; s < 10; s++) {
+      box(3.1, 0.35, 1.05, stairMat, -15.2, 0.2 + s * 0.72, 4.6 - s * 1.02);
+    }
+    label('STAIRS', -15.2, 8.6, 0, 4.6);
+    // Mechanicals: water heater, softener, furnace, sump
+    cyl(0.95, 0.95, 4.6, mat(0xb9bcb4, 0.55, { metalness: 0.25 }), -2.3, 2.3, -5.4, 'mech');
+    label('WATER HEATER', -2.3, 5.6, -5.4, 5);
+    cyl(0.62, 0.62, 3.6, mat(0x4d6b8a, 0.5), -0.5, 1.8, -5.8, 'mech');
+    label('SOFTENER', -0.5, 4.4, -5.8, 4.2);
+    box(2.6, 4.4, 2.2, mat(0x8f948c, 0.6, { metalness: 0.3 }), 2.6, 2.2, -8.6, 'mech');
+    label('FURNACE', 2.6, 5.4, -8.6, 4.6);
+    var sump = cyl(1.05, 1.05, 0.12, mat(0x2c2f2c, 0.9), -15.3, 0.07, 17.6, 'mech');
+    label('SUMP', -15.3, 2.2, 17.6, 3.6);
+    label('FUTURE LIVING AREA', 6, 6.4, 10, 8);
+    label('GARAGE ABOVE · UNEXCAVATED', 13.5, 6.4, -12, 7);
+
+    // ---------- The bathroom, finished. x -13.5..-4, z -3.5..3.5, ceiling 7.2 ----------
+    var wallMat = mat(0xe9e7de, 0.92);
+    var ceilMat = mat(0xf0eee6, 0.95);
+    function bathWall(w, h, d, x, y, z) {
+      var ms = box(w, h, d, wallMat, x, y, z, 'studs');
+      reg('drywall', ms);
+      return ms;
+    }
+    bathWall(0.3, 7.2, 7.3, -13.55, 3.6, 0);              // west
+    bathWall(9.9, 7.2, 0.3, -8.75, 3.6, -3.55);           // north
+    bathWall(0.3, 7.2, 7.3, -3.95, 3.6, 0);               // east (post at -4,0 rides inside this wall)
+    bathWall(6.9, 7.2, 0.3, -10.05, 3.6, 3.55);           // south, west of the door
+    bathWall(2.5, 0.5, 0.3, -5.35, 6.95, 3.55);           // header over the door
+    box(9.9, 0.18, 7.4, ceilMat, -8.75, 7.29, 0, 'drywall'); // bathroom ceiling
+    // Baseboards
+    var trimMat = mat(0xf4f2ea, 0.8);
+    box(9.3, 0.45, 0.07, trimMat, -8.75, 0.32, -3.36, 'trim');
+    box(0.07, 0.45, 6.8, trimMat, -13.36, 0.32, 0, 'trim');
+    box(0.07, 0.45, 6.8, trimMat, -4.14, 0.32, 0, 'trim');
+    box(6.6, 0.45, 0.07, trimMat, -10.05, 0.32, 3.36, 'trim');
+    // Tile floor over Ditra (about 5/8 in over the slab)
+    var floorTex = tileTexture('#ccd4cf', '#97a099', 6); floorTex.repeat.set(3, 2);
+    var bathFloor = new THREE.Mesh(new THREE.BoxGeometry(9.5, 0.1, 7), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.5 }));
+    bathFloor.position.set(-8.75, 0.05, 0); scene.add(bathFloor);
+    reg('ditra', bathFloor); reg('tile', bathFloor); reg('plastic', bathFloor);
+    // Chalk layout lines on the slab, just outside the wall faces
+    var chalkMat = mat(0xd8622a, 0.7, { emissive: 0x431c05 });
+    box(9.9, 0.03, 0.09, chalkMat, -8.75, 0.03, 3.85, 'chalk');
+    box(9.9, 0.03, 0.09, chalkMat, -8.75, 0.03, -3.85, 'chalk');
+    box(0.09, 0.03, 7.3, chalkMat, -13.85, 0.03, 0, 'chalk');
+    box(0.09, 0.03, 7.3, chalkMat, -3.65, 0.03, 0, 'chalk');
+    // Shower: west end, 3.2 x 5 ft, tiled
+    var shTex = tileTexture('#aebfb8', '#7e8f88', 5); shTex.repeat.set(2, 3);
+    var shMat = new THREE.MeshStandardMaterial({ map: shTex, roughness: 0.42 });
+    var shFloorTex = tileTexture('#93a89e', '#6d7f76', 5);
+    var shFloor = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.15, 5), new THREE.MeshStandardMaterial({ map: shFloorTex, roughness: 0.5 }));
+    shFloor.position.set(-11.9, 0.075, -1); scene.add(shFloor);
+    reg('tray', shFloor); reg('tile', shFloor);
+    box(0.28, 0.5, 5, shMat, -10.32, 0.25, -1, 'tile');                       // curb
+    var shW1 = box(0.07, 7.2, 5, shMat, -13.36, 3.6, -1); reg('membrane', shW1); reg('tile', shW1);
+    var shW2 = box(3.2, 7.2, 0.07, shMat, -11.9, 3.6, -3.36); reg('membrane', shW2); reg('tile', shW2);
+    bathWall(3.3, 7.2, 0.28, -11.9, 3.6, 1.55);                               // shower return wall
+    var shW3 = box(3.2, 7.2, 0.07, shMat, -11.9, 3.6, 1.38); reg('membrane', shW3); reg('tile', shW3);
+    var glass = box(0.05, 5.6, 3.2, mat(0xcfe0e2, 0.12, { transparent: true, opacity: 0.32 }), -10.3, 3.2, -0.4);
+    // Shower head, valve, drain
+    var chrome = mat(0xd7dbd8, 0.25, { metalness: 0.85 });
+    box(0.55, 0.07, 0.07, chrome, -13.15, 6.5, -1, 'showertrim');
+    cyl(0.2, 0.24, 0.16, chrome, -12.9, 6.42, -1, 'showertrim');
+    var valve = cyl(0.17, 0.17, 0.12, chrome, -13.3, 3.7, -1, 'showertrim'); valve.rotation.z = Math.PI / 2;
+    cyl(0.3, 0.3, 0.06, mat(0x555a55, 0.4, { metalness: 0.7 }), -11.9, 0.17, -1, 'drain');
+    // Toilet on the north wall
+    var porc = mat(0xf5f6f2, 0.32);
+    box(1.7, 1.35, 0.55, porc, -8.6, 2.75, -3.2, 'toilet');
+    box(1.55, 0.2, 2, porc, -8.6, 1.5, -2.45, 'toilet');
+    cyl(0.42, 0.55, 1.4, porc, -8.6, 0.75, -2.4, 'toilet');
+    // Vanity on the north wall
+    var cabMat = mat(0x6d5138, 0.7);
+    box(2, 2.8, 1.7, cabMat, -5.3, 1.45, -2.6, 'vanity');
+    box(2.15, 0.13, 1.85, mat(0xe3e1d8, 0.35), -5.3, 2.92, -2.6, 'vanity');
+    cyl(0.58, 0.44, 0.3, porc, -5.3, 3, -2.55, 'vanity');
+    cyl(0.07, 0.07, 0.5, chrome, -5.3, 3.25, -3.2, 'vanity');
+    box(0.07, 0.07, 0.5, chrome, -5.3, 3.5, -3.05, 'vanity');
+    box(1.7, 2.4, 0.06, mat(0xdfe9ec, 0.08, { metalness: 0.9 }), -5.3, 4.7, -3.36, 'vanity');
+    var vlight = box(1.9, 0.3, 0.2, mat(0xfff1cf, 0.4, { emissive: 0x665522 }), -5.3, 6.3, -3.3, 'vanitylight');
+    box(0.32, 0.48, 0.06, mat(0xf5f6f2, 0.5), -4.32, 3.9, -3.36, 'gfci');
+    // Fan over the fixture cluster + housing above the ceiling
+    box(1.15, 0.09, 1.15, mat(0xf5f6f2, 0.5), -8.5, 7.17, -0.8, 'fan');
+    cyl(0.55, 0.55, 0.75, mat(0x9ba09a, 0.45, { metalness: 0.5 }), -8.5, 7.65, -0.8, 'fan');
+    // Duct: rise, then one joist bay straight across, over both beams, out the east rim joist
+    var ductMat = mat(0xb7bbb4, 0.35, { metalness: 0.6 });
+    var collar = cyl(0.19, 0.19, 0.35, ductMat, -8.5, 7.95, -0.8, 'collar');
+    var rise = cyl(0.167, 0.167, 0.75, ductMat, -8.5, 8.15, -0.8, 'duct'); reg('caps', rise);
+    var e1 = new THREE.Mesh(new THREE.SphereGeometry(0.19, 14, 12), ductMat); e1.position.set(-8.5, 8.35, -0.8); scene.add(e1); reg('elbows', e1);
+    var run = cyl(0.167, 0.167, 25.4, ductMat, 4.2, 8.35, -0.8, 'duct'); run.rotation.z = Math.PI / 2; reg('caps', run);
+    for (var st = 0; st < 7; st++) {
+      box(0.1, 0.55, 0.45, mat(0x7c8078, 0.5, { metalness: 0.4 }), -6 + st * 3.6, 8.35, -0.8, 'tape');
+    }
+    var e2 = new THREE.Mesh(new THREE.SphereGeometry(0.19, 14, 12), ductMat); e2.position.set(16.9, 8.35, -0.8); scene.add(e2); reg('elbows', e2);
+    box(0.55, 0.65, 0.65, mat(0x8f948c, 0.5, { metalness: 0.4 }), 17.95, 8.35, -0.8, 'ventcap');
+    label('EXHAUST DUCT — ONE JOIST BAY, OVER THE BEAMS', 4.2, 9.5, -0.8, 9);
+    label('BATHROOM — PHASE 1', -8.75, 8.7, 0, 6);
+    // Door (shown open) + beveled transition strip + timer switch
+    var door = box(2.45, 6.6, 0.1, mat(0x8a6a48, 0.65), -6.05, 3.3, 4.6, 'door'); door.rotation.y = 0.72;
+    var knob = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 10), chrome); knob.position.set(-5.1, 3.3, 5.35); scene.add(knob); reg('door', knob);
+    box(2.5, 0.07, 0.55, mat(0xb08d4f, 0.4, { metalness: 0.6 }), -5.35, 0.05, 3.55, 'transition');
+    box(0.3, 0.48, 0.06, mat(0xf5f6f2, 0.5), -4.5, 4, 3.36, 'timer');
+
+    // ---------- Materials list ----------
+    var MATERIALS = [
+      { g: 'Prep & layout' },
+      { key: 'plastic', name: 'Plastic sheeting + painter\u2019s tape', qty: '2\u00d72 ft sheet', where: 'Taped to the slab inside the bathroom footprint for the moisture test — sealed edges, 24–72 hours, before any framing.' },
+      { key: 'chalk', name: 'Chalk reel + chalk', qty: '1', where: 'Snaps the bathroom wall lines on the slab (shown just outside the walls). Layout gets settled at the dry-fit, before the permit.' },
+      { g: 'Framing' },
+      { key: 'studs', name: '2\u00d74 studs, 8 ft', qty: '\u224836 — estimate', where: 'The bathroom walls. All interior walls, no foam insulation. Frame them unattached, stand them up for the dry-fit, anchor after the permit.' },
+      { key: 'plates', name: 'Pressure-treated 2\u00d74 bottom plates', qty: '\u22486 — estimate', where: 'Bottom plate of every bathroom wall, against the concrete. Same wall highlight — the treated plate is the bottom 3\u00bd inches.' },
+      { key: 'shims', name: 'Shims + construction screws', qty: '1 pack + box', where: 'Shim the bottom plates where the slab wanders (under \u00bc in of variation = shim, no leveling pour).' },
+      { g: 'Drywall & paint' },
+      { key: 'drywall', name: 'Moisture-resistant drywall, 4\u00d78', qty: '\u22488 sheets — estimate', where: 'Bathroom walls and ceiling, after the rough-in inspection. Nothing goes on before that inspection.' },
+      { key: 'paint', name: 'Primer + bathroom paint', qty: '1 gal each', where: 'Same surfaces as the drywall — walls and ceiling of the bathroom only in this phase.' },
+      { g: 'Shower & tile' },
+      { key: 'tray', name: 'Pre-sloped foam tray (Schluter Kerdi) or mortar bed', qty: '1', flag: 'DECISION PENDING', where: 'The shower floor. Mortar bed vs foam tray is still open — it waits on the drain check (drain type/position, gravity vs ejector).' },
+      { key: 'membrane', name: 'Waterproof membrane (Kerdi) + corners/band', qty: '1 roll + kit', where: 'The shower walls, over the backer board, under the tile.' },
+      { key: 'ditra', name: 'Ditra underlayment', qty: '\u224866 sq ft', where: 'Under the bathroom floor tile — uncoupling and a moisture layer over the slab. Floor build-up is tile + Ditra \u2248 5/8 in.' },
+      { key: 'tile', name: 'Tile — shower + floor', qty: 'measure at dry-fit', where: 'Shower walls and floor, the curb, and the bathroom floor.' },
+      { key: 'grout', name: 'Grout + color-matched silicone', qty: '1 bag + 2 tubes', where: 'Everywhere the tile is — joints, the curb, and the change-of-plane corners in silicone.' },
+      { g: 'Fixtures' },
+      { key: 'toilet', name: 'Toilet + wax ring + supply line', qty: '1', where: 'North wall, on the rough-in. Flange set to the bathroom\u2019s own finished floor height, not the future basement floor.' },
+      { key: 'vanity', name: 'Vanity + top + faucet + trap kit', qty: '1', where: 'North wall next to the toilet — cabinet, sink, faucet, and the mirror above it.' },
+      { key: 'showertrim', name: 'Shower valve trim + shower head', qty: '1 set', where: 'West wall of the shower — head up high, valve at hand height.' },
+      { key: 'drain', name: 'Shower drain assembly', qty: '1', where: 'Center of the shower floor, tied into the rough-in below the slab.' },
+      { g: 'Exhaust (settled buy list)' },
+      { key: 'fan', name: 'Exhaust fan, \u224880 CFM, audible type', qty: '1 — at permit stage', where: 'Bathroom ceiling, over the fixture cluster — final spot picked at the dry-fit. Doubles as whole-basement air dilution on its timer.' },
+      { key: 'duct', name: 'Rigid duct, 4 in \u00d7 5 ft sections', qty: '\u00d76 — settled', where: 'One joist bay, straight across the basement in the ceiling, passing over both beams, to the rim joist. No dips, no 45s.' },
+      { key: 'elbows', name: '90\u00b0 elbows, 4 in', qty: '\u00d72 — settled', where: 'One at the fan where the run turns horizontal, one at the wall where it exits.' },
+      { key: 'collar', name: 'Start collar, 4 in', qty: '\u00d71 — settled', where: 'On top of the fan housing, where the duct run begins.' },
+      { key: 'tape', name: 'Foil tape + straps/hangers', qty: '1 roll + \u22487 straps', where: 'Every duct joint gets foil tape; straps hang the run from the joists about every 4 feet.' },
+      { key: 'caps', name: 'Temporary end caps, 4 in', qty: '\u00d72 — settled', where: 'Cap the open duct ends during the build so the run stays clean until the fan and vent cap go on.' },
+      { key: 'ventcap', name: 'Exterior vent cap with damper', qty: '1 — at permit stage', where: 'Outside the rim joist where the duct exits. The damper keeps outside air (and critters) out.' },
+      { key: 'timer', name: 'Timer switch for the fan', qty: '1', where: 'On the wall just inside the bathroom door — runs the fan long enough to clear moisture and basement air.' },
+      { g: 'Electrical' },
+      { key: 'gfci', name: 'GFCI outlet', qty: '1', where: 'On the wall beside the vanity mirror. Bathroom electrical rides on the building permit.' },
+      { key: 'vanitylight', name: 'Vanity light fixture', qty: '1', where: 'Above the mirror on the north wall.' },
+      { g: 'Door & trim' },
+      { key: 'door', name: 'Prehung door, 30 in', qty: '1', where: 'South wall of the bathroom. Shown open in the model.' },
+      { key: 'transition', name: 'Beveled transition strip', qty: '1', where: 'At the bathroom threshold — the bathroom floor sits intentionally lower than the future basement floor, as water containment.' },
+      { key: 'trim', name: 'Baseboard + casing', qty: '\u224833 lin ft', where: 'Around the inside of the bathroom walls and the door casing.' }
+    ];
+    // plates/shims/drywall share meshes with related keys
+    registry['plates'] = registry['studs'];
+    registry['shims'] = registry['studs'];
+    registry['paint'] = registry['drywall'];
+    registry['grout'] = registry['tile'];
+
+    var listEl = document.getElementById('matList');
+    var whereBox = document.getElementById('whereBox');
+    var itemByKey = {};
+    MATERIALS.forEach(function (m) {
+      if (m.g) {
+        var h = document.createElement('div');
+        h.className = 'group-title'; h.textContent = m.g;
+        listEl.appendChild(h);
+        return;
+      }
+      itemByKey[m.key] = m;
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'item'; b.dataset.key = m.key;
+      b.innerHTML = m.name + ' <span class="qty">' + m.qty + '</span>' + (m.flag ? ' <span class="flag">' + m.flag + '</span>' : '');
+      b.addEventListener('click', function () { selectKey(m.key, true); });
+      listEl.appendChild(b);
+      m.el = b;
+    });
+
+    var selected = null, boxHelper = null;
+    function clearHighlight() {
+      if (!selected) return;
+      (registry[selected] || []).forEach(function (ms) {
+        if (ms.material && ms.material.emissive) { ms.material.emissive.setHex(ms.userData._em != null ? ms.userData._em : 0x000000); ms.material.emissiveIntensity = 1; }
+      });
+      if (boxHelper) { scene.remove(boxHelper); boxHelper = null; }
+      selected = null;
+      document.querySelectorAll('.item.sel').forEach(function (el) { el.classList.remove('sel'); });
+    }
+    function selectKey(key, fromList) {
+      if (selected === key) { clearHighlight(); whereBox.innerHTML = '<span class="tag">Where it goes</span><strong>Nothing selected</strong>Pick a material and it will pulse orange in the 3D model.'; return; }
+      clearHighlight();
+      selected = key;
+      var meshes = registry[key] || [];
+      meshes.forEach(function (ms) {
+        if (ms.material && ms.material.emissive) {
+          if (ms.userData._em == null) ms.userData._em = ms.material.emissive.getHex();
+          ms.material.emissive.setHex(0xb3541e);
+        }
+      });
+      if (meshes.length) {
+        var bb = new THREE.Box3();
+        meshes.forEach(function (ms) { bb.expandByObject(ms); });
+        boxHelper = new THREE.Box3Helper(bb, 0xff7a2a);
+        scene.add(boxHelper);
+      }
+      var item = itemByKey[key];
+      document.querySelectorAll('.item.sel').forEach(function (el) { el.classList.remove('sel'); });
+      if (item) {
+        item.el.classList.add('sel');
+        if (!fromList) item.el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        whereBox.innerHTML = '<span class="tag">Where it goes</span><strong>' + item.name + ' · ' + item.qty + '</strong>' + item.where;
+      } else {
+        whereBox.innerHTML = '<span class="tag">In the model</span><strong>Existing mechanicals</strong>Already in the basement — not part of the shopping list.';
+      }
+    }
+    document.getElementById('clearSel').addEventListener('click', function () {
+      clearHighlight();
+      whereBox.innerHTML = '<span class="tag">Where it goes</span><strong>Nothing selected</strong>Pick a material and it will pulse orange in the 3D model.';
+    });
+
+    // ---------- Camera: drag look + WASD walk + presets ----------
+    var yaw = 0.55, pitch = -0.16;
+    camera.position.set(15.5, 9.5, 16.5);
+    function setView(px, py, pz, tx, ty, tz) {
+      camera.position.set(px, py, pz);
+      var d = new THREE.Vector3(tx - px, ty - py, tz - pz).normalize();
+      pitch = Math.asin(THREE.MathUtils.clamp(d.y, -1, 1));
+      yaw = Math.atan2(-d.x, -d.z);
+    }
+    setView(15.5, 9.5, 16.5, -5, 1.5, -4);
+    var views = {
+      overview: [15.5, 9.5, 16.5, -5, 1.5, -4],
+      door: [-5.3, 5.2, 10.5, -6.2, 3.2, 0],
+      inside: [-5, 5.1, 2.7, -12.8, 3.1, -1.6],
+      duct: [-14.5, 6.6, 3.6, 14, 8.3, -0.8],
+      mech: [4.5, 5.4, 3.5, -1.8, 2.4, -6.8]
+    };
+    document.querySelectorAll('[data-view]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var v = views[btn.dataset.view];
+        setView(v[0], v[1], v[2], v[3], v[4], v[5]);
+      });
+    });
+    var dragging = false, lastX = 0, lastY = 0, downX = 0, downY = 0;
+    canvas.addEventListener('pointerdown', function (e) {
+      dragging = true; lastX = downX = e.clientX; lastY = downY = e.clientY;
+      canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      yaw -= (e.clientX - lastX) * 0.005;
+      pitch -= (e.clientY - lastY) * 0.005;
+      pitch = Math.max(-1.25, Math.min(1.25, pitch));
+      lastX = e.clientX; lastY = e.clientY;
+    });
+    canvas.addEventListener('pointerup', function (e) {
+      dragging = false;
+      if (Math.hypot(e.clientX - downX, e.clientY - downY) < 6) {
+        var r = canvas.getBoundingClientRect();
+        var nd = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+        var rc = new THREE.Raycaster();
+        rc.setFromCamera(nd, camera);
+        var hits = rc.intersectObjects(scene.children, false);
+        for (var i = 0; i < hits.length; i++) {
+          if (hits[i].object.userData.key) { selectKey(hits[i].object.userData.key, false); break; }
+        }
+      }
+    });
+    var keys = {};
+    window.addEventListener('keydown', function (e) { keys[e.key.toLowerCase()] = true; });
+    window.addEventListener('keyup', function (e) { keys[e.key.toLowerCase()] = false; });
+
+    function resize() {
+      var w = canvas.clientWidth, h = canvas.clientHeight;
+      if (canvas.width !== Math.floor(w * renderer.getPixelRatio()) || canvas.height !== Math.floor(h * renderer.getPixelRatio())) {
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      }
+    }
+    var clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      var dt = Math.min(clock.getDelta(), 0.05);
+      var t = clock.elapsedTime;
+      var speed = (keys['shift'] ? 17 : 8.5) * dt;
+      var f = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
+      var r = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+      if (keys['w'] || keys['arrowup']) camera.position.addScaledVector(f, speed);
+      if (keys['s'] || keys['arrowdown']) camera.position.addScaledVector(f, -speed);
+      if (keys['a'] || keys['arrowleft']) camera.position.addScaledVector(r, -speed);
+      if (keys['d'] || keys['arrowright']) camera.position.addScaledVector(r, speed);
+      camera.position.x = Math.max(-16.3, Math.min(16.3, camera.position.x));
+      camera.position.z = Math.max(-19.3, Math.min(19.3, camera.position.z));
+      if (!views._free) camera.position.y = Math.max(2.2, Math.min(10.5, camera.position.y));
+      var look = new THREE.Vector3(
+        -Math.sin(yaw) * Math.cos(pitch),
+        Math.sin(pitch),
+        -Math.cos(yaw) * Math.cos(pitch)
+      ).add(camera.position);
+      camera.lookAt(look);
+      if (selected) {
+        (registry[selected] || []).forEach(function (ms) {
+          if (ms.material && ms.material.emissive) ms.material.emissiveIntensity = 0.55 + 0.35 * Math.sin(t * 4.5);
+        });
+      }
+      resize();
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>
