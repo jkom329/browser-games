@@ -96,11 +96,11 @@
     <div class="readout"><span class="pip"></span><span id="selectionText"><b>0 selected</b> · drag a box around marines</span></div>
     <div class="mouse-guide">
       <span><i class="mouse-icon left" aria-hidden="true"></i><b>Left:</b> select / drag box</span>
-      <span><i class="mouse-icon right" aria-hidden="true"></i><b>Right:</b> move / attack</span>
-      <span><b>A</b> attack-move · <b>S</b> hold · <b>P</b> pause</span>
+      <span><i class="mouse-icon right" aria-hidden="true"></i><b>Right:</b> move (no firing)</span>
+      <span><b>A</b> + click: attack-move · <b>S</b> hold · <b>P</b> pause</span>
     </div>
   </section>
-  <div class="hint">Shift-click adds to selection · double-click a marine selects the squad · Escape clears selection</div>
+  <div class="hint">Right-click an enemy to focus fire · Shift-click adds to selection · double-click a marine selects the squad · Escape clears selection</div>
 </main>
 <script>
 (function(){
@@ -203,6 +203,7 @@
   }
   function updatePlayer(u,dt){
     var explicit=u.target&&!u.target.dead?u.target:null;
+    if(u.move&&!u.move.attack&&!explicit&&!u.hold){if(moveUnit(u,u.move.x,u.move.y,dt))u.move=null;return}
     var enemy=explicit||nearestEnemy(u),d=enemy?dist(u,enemy):1e9;
     if(enemy&&d<u.range&&clearShot(u,enemy)){u.vx=u.vy=0;u.angle=Math.atan2(enemy.y-u.y,enemy.x-u.x);if(u.reload<=0)fire(u,enemy);return}
     if(explicit&&!u.hold){
@@ -239,9 +240,9 @@
   }
   function selectAll(){selected.clear();living('blue').forEach(function(u){selected.add(u.id)});updateHUD()}
   function selectedUnits(){return units.filter(function(u){return !u.dead&&u.team==='blue'&&selected.has(u.id)})}
-  function issueMove(x,y,spread){
-    var list=selectedUnits();if(!list.length)return;var cols=Math.ceil(Math.sqrt(list.length)),gap=spread?46:30;
-    list.forEach(function(u,i){var cx=i%cols,cy=Math.floor(i/cols);u.move={x:Math.max(18,Math.min(world.w-18,x+(cx-(cols-1)/2)*gap)),y:Math.max(18,Math.min(world.h-18,y+(cy-(Math.ceil(list.length/cols)-1)/2)*gap))};u.target=null;u.hold=false});commandPing={x:x,y:y,kind:commandMode==='attack'?'attack':'move',life:.5};commandMode=null;orderSound();
+  function issueMove(x,y,attackMove){
+    var list=selectedUnits();if(!list.length)return;var cols=Math.ceil(Math.sqrt(list.length)),gap=30;
+    list.forEach(function(u,i){var cx=i%cols,cy=Math.floor(i/cols);u.move={x:Math.max(18,Math.min(world.w-18,x+(cx-(cols-1)/2)*gap)),y:Math.max(18,Math.min(world.h-18,y+(cy-(Math.ceil(list.length/cols)-1)/2)*gap)),attack:!!attackMove};u.target=null;u.hold=false});commandPing={x:x,y:y,kind:attackMove?'attack':'move',life:.5};commandMode=null;orderSound();
   }
   function issueAttack(target){var list=selectedUnits();if(!list.length)return;list.forEach(function(u){u.target=target;u.move=null;u.hold=false});commandPing={x:target.x,y:target.y,kind:'attack',life:.5};commandMode=null;orderSound()}
   function hold(){selectedUnits().forEach(function(u){u.move=null;u.target=null;u.hold=true});orderSound()}
@@ -253,7 +254,7 @@
   canvas.addEventListener('pointerup',function(e){if(!pointer.down)return;var p=pos(e);pointer.down=false;
     if(pointer.drag){var x1=Math.min(pointer.startX,p.x),x2=Math.max(pointer.startX,p.x),y1=Math.min(pointer.startY,p.y),y2=Math.max(pointer.startY,p.y);if(!pointer.shift)selected.clear();units.forEach(function(u){if(!u.dead&&u.team==='blue'&&u.x>=x1&&u.x<=x2&&u.y>=y1&&u.y<=y2)selected.add(u.id)});commandMode=null;orderSound();updateHUD();return}
     var hit=unitAt(p),now=performance.now();
-    if(commandMode==='attack'){if(hit&&hit.team==='red')issueAttack(hit);else issueMove(p.x,p.y,false);updateHUD();return}
+    if(commandMode==='attack'){if(hit&&hit.team==='red')issueAttack(hit);else issueMove(p.x,p.y,true);updateHUD();return}
     if(hit&&hit.team==='blue'){
       if(lastFriendlyClick.id===hit.id&&now-lastFriendlyClick.time<360&&!e.shiftKey){selectAll()}else{if(!e.shiftKey)selected.clear();if(e.shiftKey&&selected.has(hit.id))selected.delete(hit.id);else selected.add(hit.id)}
       lastFriendlyClick={id:hit.id,time:now};orderSound();updateHUD();return;
