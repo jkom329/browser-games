@@ -413,9 +413,9 @@
       document.querySelectorAll('.item.sel').forEach(function (el) { el.classList.remove('sel'); });
     }
     var itemViews = {
-      duct: [-12.5, 8.35, -0.8, 16, 8.3, -0.8], elbows: [-12.5, 8.35, -0.8, 16, 8.3, -0.8],
-      collar: [-12.5, 8.35, -0.8, 16, 8.3, -0.8], tape: [-12.5, 8.35, -0.8, 16, 8.3, -0.8], caps: [-12.5, 8.35, -0.8, 16, 8.3, -0.8],
-      ventcap: [10.5, 6.6, 3.8, 17.8, 8.35, -0.8],
+      duct: [0, 6.2, 2.4, 11, 8.4, -0.8], elbows: [0, 6.2, 2.4, 11, 8.4, -0.8],
+      collar: [-5.2, 4.4, 2.9, -9.8, 6.9, -1.6], tape: [0, 6.2, 2.4, 11, 8.4, -0.8], caps: [0, 6.2, 2.4, 11, 8.4, -0.8],
+      ventcap: [24.5, 7.6, 3.6, 17.9, 8.35, -0.8],
       fan: [-5.2, 4.4, 2.9, -9.8, 6.9, -1.6], timer: [-5.2, 4.4, 2.9, -6, 3.8, 3.4],
       toilet: [-5.4, 5, 3, -8.8, 3.2, -3.4], vanity: [-5.4, 5, 3, -6.4, 3.6, -3.4],
       gfci: [-5.4, 5, 3, -5.2, 3.9, -3.4], vanitylight: [-5.4, 5, 3, -5.6, 5.4, -3.4],
@@ -473,7 +473,7 @@
       overview: [15.8, 5.6, 17.8, -11, 2.2, -7],
       door: [-5.3, 5.2, 10.5, -6.2, 3.2, 0],
       inside: [-5, 5.1, 2.7, -12.8, 3.1, -1.6],
-      duct: [-12.5, 8.35, -0.8, 16, 8.3, -0.8],
+      duct: [0, 6.2, 2.4, 11, 8.4, -0.8],
       mech: [4.5, 5.4, 3.5, -1.8, 2.4, -6.8]
     };
     document.querySelectorAll('[data-view]').forEach(function (btn) {
@@ -538,8 +538,8 @@
       if (keyActive('s') || keyActive('arrowdown')) camera.position.addScaledVector(f, -speed);
       if (keyActive('a') || keyActive('arrowleft')) camera.position.addScaledVector(r, -speed);
       if (keyActive('d') || keyActive('arrowright')) camera.position.addScaledVector(r, speed);
-      camera.position.x = Math.max(-16.3, Math.min(16.3, camera.position.x));
-      camera.position.z = Math.max(-19.3, Math.min(19.3, camera.position.z));
+      camera.position.x = Math.max(-26, Math.min(26, camera.position.x));
+      camera.position.z = Math.max(-28, Math.min(28, camera.position.z));
       if (!views._free) camera.position.y = Math.max(2.2, Math.min(10.5, camera.position.y));
       var look = new THREE.Vector3(
         -Math.sin(yaw) * Math.cos(pitch),
