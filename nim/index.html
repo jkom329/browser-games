@@ -391,7 +391,7 @@
         <ol class="rules">
           <li>Take any number of remaining sticks from one row.</li>
           <li>Players alternate turns. You cannot skip.</li>
-          <li>Whoever takes the very last stick loses the round.</li>
+          <li>The round ends the moment one stick remains — the player who would have to take it loses.</li>
         </ol>
       </details>
     </section>
@@ -560,8 +560,13 @@
         });
         drawCut(rowIndex, indices, false);
 
-        if (countRemaining() === 0) {
-          finishRound(turn);
+        var remaining = countRemaining();
+        if (remaining === 0) {
+          finishRound(turn, false);
+          return;
+        }
+        if (remaining === 1) {
+          finishRound(turn === 0 ? 1 : 0, true);
           return;
         }
         turn = turn === 0 ? 1 : 0;
@@ -569,7 +574,7 @@
         if (mode === "ai" && turn === 1) scheduleAI();
       }
 
-      function finishRound(loser) {
+      function finishRound(loser, stranded) {
         gameOver = true;
         aiThinking = false;
         panel.classList.remove("thinking");
@@ -578,12 +583,16 @@
         else score.right += 1;
         updateUI();
         statusEl.innerHTML = '<span class="marker">■</span> Round over';
-        resultKicker.textContent = playerName(loser) + " took the last stick";
+        resultKicker.textContent = stranded ? "One stick left standing" : playerName(loser) + " took the last stick";
         resultTitle.textContent = playerName(winner) + (mode === "ai" && winner === 0 ? " win." : " wins.");
         if (mode === "ai") {
-          resultCopy.textContent = winner === 0 ? "You left the losing move for the computer." : "The last move was yours. Try changing the first row you take from.";
+          resultCopy.textContent = stranded
+            ? (winner === 0 ? "One stick remains, and the computer would have had to take it. No crossing-out needed." : "The computer left one stick standing, and taking it would have lost. No crossing-out needed.")
+            : (winner === 0 ? "You left the losing move for the computer." : "The last move was yours. Try changing the first row you take from.");
         } else {
-          resultCopy.textContent = playerName(winner) + " left the last stick for " + playerName(loser) + ".";
+          resultCopy.textContent = stranded
+            ? playerName(winner) + " left one stick standing for " + playerName(loser) + ", who would have had to take it."
+            : playerName(winner) + " left the last stick for " + playerName(loser) + ".";
         }
         resultEl.classList.add("show");
         document.getElementById("playAgain").focus();
