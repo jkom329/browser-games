@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portfolio — Playable worlds, built from scratch</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Georgia, 'Times New Roman', serif; background: #101014; color: #e8e4da; }
+  a { color: #d8b56b; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 64px; }
+  header { border-bottom: 1px solid #2c2c33; padding-bottom: 28px; margin-bottom: 36px; }
+  .kicker { font-family: 'Courier New', monospace; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #9a958a; margin: 0 0 14px; }
+  h1 { font-size: 40px; line-height: 1.15; margin: 0 0 18px; font-weight: normal; }
+  .intro-links { display: flex; flex-wrap: wrap; gap: 12px 28px; font-family: 'Courier New', monospace; font-size: 14px; }
+  .intro-links a { text-decoration: none; border-bottom: 1px solid #d8b56b; padding-bottom: 2px; }
+  h2 { font-family: 'Courier New', monospace; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #9a958a; margin: 44px 0 6px; font-weight: normal; }
+  .game { border-top: 1px solid #2c2c33; padding: 20px 0; }
+  .game h3 { margin: 0 0 6px; font-size: 24px; font-weight: normal; }
+  .game p { margin: 0 0 10px; line-height: 1.55; color: #c9c4b8; }
+  .play { font-family: 'Courier New', monospace; font-size: 14px; text-decoration: none; border: 1px solid #d8b56b; padding: 6px 14px; display: inline-block; }
+  .play:hover { background: #d8b56b; color: #101014; }
+  section p { line-height: 1.6; color: #c9c4b8; }
+  footer { border-top: 1px solid #2c2c33; margin-top: 52px; padding-top: 20px; font-family: 'Courier New', monospace; font-size: 13px; color: #9a958a; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="kicker">Portfolio</p>
+    <h1>Playable worlds, built from scratch.</h1>
+    <div class="intro-links">
+      <a href="#games">View the work</a>
+      <a href="https://github.com/jkom329/browser-games" target="_blank" rel="noopener noreferrer">GitHub — game source code</a>
+    </div>
+  </header>
+
+  <h2 id="games">Games — five playable builds</h2>
+
+  <div class="game">
+    <h3>Space Combat</h3>
+    <p>2D Asteroids-style space combat.</p>
+    <a class="play" href="space-combat/">Play</a>
+  </div>
+
+  <div class="game">
+    <h3>Pong</h3>
+    <p>Pong with moving, rotating paddles.</p>
+    <a class="play" href="pong/">Play</a>
+  </div>
+
+  <div class="game">
+    <h3>Nim</h3>
+    <p>The classic take-away game against the computer — four rows of 1, 3, 5 and 7 sticks, and whoever takes the last stick loses.</p>
+    <a class="play" href="nim/">Play</a>
+  </div>
+
+  <div class="game">
+    <h3>Marine Tactics</h3>
+    <p>Simplified StarCraft-like tactics: 10 marines a side, no base-building, pure positioning against the AI. Mouse only: left-click/drag to select, right-click to move or attack.</p>
+    <a class="play" href="marine-tactics/">Play</a>
+  </div>
+
+  <div class="game">
+    <h3>Top-Down Racer</h3>
+    <p>A TI-83+ style scrolling-track racer: steer to stay on the track and survive as long as you can.</p>
+    <a class="play" href="top-down-racer/">Play</a>
+  </div>
+
+  <h2>03 / Chess Engine</h2>
+  <section>
+    <h3 style="font-size:24px;font-weight:normal;margin:0 0 6px;">Furtificus</h3>
+    <p>Furtificus played on the Free Internet Chess Server (FICS) as leaderbeans(C). Its verified record there: Blitz 1637, Lightning 1961.</p>
+  </section>
+
+  <h2>Architecture</h2>
+  <section>
+    <h3 style="font-size:24px;font-weight:normal;margin:0 0 6px;">Spencer House</h3>
+    <p>A walkable 3D dream house built around the split-staircase foyer of Resident Evil's Spencer Mansion. It lives in Muse rather than on this site — ask Muse to open it.</p>
+  </section>
+
+  <footer>
+    Source for every game on this page: <a href="https://github.com/jkom329/browser-games">github.com/jkom329/browser-games</a>
+  </footer>
+</div>
+</body>
+</html>
