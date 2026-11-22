@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#171b17" />
+  <link rel="icon" href="data:," />
+  <title>Top-Down Racer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      color-scheme: light dark;
+      --page: #e9ece7;
+      --panel: #f7f8f5;
+      --ink: #171b17;
+      --muted: #566057;
+      --line: #a6aea5;
+      --key: #222922;
+      --key-ink: #f4f7f0;
+      --accent: #2d6f4e;
+      --shadow: rgba(18, 27, 20, .18);
+      --canvas: #cbd3c4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page: #101410;
+        --panel: #171d18;
+        --ink: #eef4eb;
+        --muted: #aab5a8;
+        --line: #424d42;
+        --key: #d9e1d4;
+        --key-ink: #172018;
+        --accent: #77b68d;
+        --shadow: rgba(0, 0, 0, .38);
+        --canvas: #bfc8b8;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    html, body { margin: 0; min-height: 100%; overflow-x: hidden; }
+    body {
+      background: var(--page);
+      color: var(--ink);
+      font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      overscroll-behavior: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button { font: inherit; }
+    .shell {
+      min-height: 100dvh;
+      display: grid;
+      grid-template-columns: minmax(0, 730px) minmax(260px, 360px);
+      justify-content: center;
+      gap: clamp(18px, 3vw, 44px);
+      padding: clamp(12px, 2vw, 28px);
+    }
+    .game-column { min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+    .frame {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      border: 2px solid var(--ink);
+      background: var(--canvas);
+      box-shadow: 8px 8px 0 var(--shadow);
+      touch-action: none;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      background: #cbd3c4;
+    }
+    .hud {
+      position: absolute;
+      inset: 0 0 auto;
+      height: 58px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 12px 14px;
+      color: #182019;
+      pointer-events: none;
+      font-size: clamp(12px, 2.2vw, 16px);
+      font-weight: 600;
+      text-shadow: 0 1px 0 rgba(255,255,255,.4);
+    }
+    .hud-block { display: grid; gap: 1px; }
+    .hud-block:last-child { text-align: right; }
+    .hud-label { font-size: .7em; letter-spacing: .12em; opacity: .64; }
+    .hud-value { font-variant-numeric: tabular-nums; }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(203, 211, 196, .9);
+      color: #171c17;
+      text-align: center;
+    }
+    .overlay[hidden] { display: none; }
+    .overlay-card { max-width: 440px; }
+    .eyebrow {
+      margin: 0 0 12px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0 0 16px;
+      font-size: clamp(30px, 7vw, 58px);
+      line-height: .95;
+      letter-spacing: -.055em;
+      text-transform: uppercase;
+    }
+    .intro {
+      max-width: 35ch;
+      margin: 0 auto 24px;
+      font-size: clamp(13px, 2.5vw, 16px);
+      line-height: 1.55;
+    }
+    .primary {
+      appearance: none;
+      border: 2px solid #182019;
+      border-radius: 0;
+      background: #182019;
+      color: #f1f5ed;
+      padding: 13px 24px;
+      min-width: 170px;
+      font-weight: 600;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 4px 4px 0 rgba(24,32,25,.22);
+    }
+    .primary:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 rgba(24,32,25,.22); }
+    .result { margin: 0 0 20px; font-size: 15px; line-height: 1.7; }
+    .result strong { display: block; font-size: 34px; line-height: 1.1; }
+
+    .touch-controls {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+      user-select: none;
+    }
+    .steer {
+      min-height: 74px;
+      border: 2px solid var(--ink);
+      border-radius: 0;
+      background: var(--key);
+      color: var(--key-ink);
+      font-size: 21px;
+      font-weight: 600;
+      cursor: pointer;
+      touch-action: none;
+      box-shadow: 4px 4px 0 var(--shadow);
+    }
+    .steer.active, .steer:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--shadow); }
+
+    aside {
+      align-self: center;
+      padding: 6px 0;
+    }
+    .time-mark {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 26px;
+      color: var(--accent);
+    }
+    .time-mark span { font-size: clamp(42px, 6vw, 72px); line-height: 1; letter-spacing: -.08em; }
+    .time-mark small { font-size: 12px; font-weight: 600; letter-spacing: .13em; }
+    aside h2 { margin: 0 0 10px; font-size: 18px; letter-spacing: -.02em; }
+    aside p { margin: 0 0 22px; color: var(--muted); font-size: 13px; line-height: 1.65; }
+    .controls-list { list-style: none; padding: 0; margin: 0 0 28px; border-top: 1px solid var(--line); }
+    .controls-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 12px;
+    }
+    kbd {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      padding: 2px 6px;
+      color: var(--ink);
+      box-shadow: 0 2px 0 var(--line);
+      white-space: nowrap;
+    }
+    .utility-row { display: flex; flex-wrap: wrap; gap: 9px; }
+    .utility {
+      border: 1px solid var(--line);
+      border-radius: 0;
+      background: transparent;
+      color: var(--ink);
+      padding: 9px 11px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .utility:hover { border-color: var(--ink); }
+    .tip { margin-top: 20px; font-size: 11px; color: var(--muted); }
+
+    @media (max-width: 820px) {
+      .shell { min-height: auto; display: block; padding: 10px 10px calc(14px + env(safe-area-inset-bottom)); }
+      .game-column { justify-content: flex-start; }
+      .frame { box-shadow: 5px 5px 0 var(--shadow); }
+      .touch-controls { display: grid; }
+      aside { padding: 24px 4px 8px; }
+      .time-mark { display: none; }
+      aside h2, aside > p, .controls-list { display: none; }
+      .utility-row { justify-content: center; }
+      .tip { text-align: center; margin: 12px auto 0; }
+    }
+    @media (max-height: 760px) and (min-width: 821px) {
+      .shell { grid-template-columns: minmax(0, 560px) minmax(250px, 320px); padding: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .primary:active, .steer.active, .steer:active { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="game-column" aria-label="Top-down racing game">
+      <div class="frame" id="frame">
+        <canvas id="game" width="720" height="900" aria-label="A scrolling top-down road with a car"></canvas>
+        <div class="hud" aria-live="off">
+          <div class="hud-block"><span class="hud-label">TIME</span><span class="hud-value" id="score">0.00 s</span></div>
+          <div class="hud-block"><span class="hud-label">BEST THIS VISIT</span><span class="hud-value" id="best">—</span></div>
+        </div>
+        <div class="overlay" id="overlay">
+          <div class="overlay-card">
+            <p class="eyebrow">Endless survival racer</p>
+            <h1>Stay on the road.</h1>
+            <p class="intro" id="overlayText">The track keeps coming. Steer left and right, hold your line, and see how long you last.</p>
+            <div class="result" id="result" hidden></div>
+            <button class="primary" id="startBtn" type="button">Start run</button>
+          </div>
+        </div>
+      </div>
+      <div class="touch-controls" aria-label="Touch steering controls">
+        <button class="steer" id="leftBtn" type="button" aria-label="Steer left">← LEFT</button>
+        <button class="steer" id="rightBtn" type="button" aria-label="Steer right">RIGHT →</button>
+      </div>
+    </section>
+
+    <aside aria-label="Game instructions">
+      <div class="time-mark"><span>∞</span><small>TRACK</small></div>
+      <h2>One rule: stay inside.</h2>
+      <p>The road narrows and the pace rises as your run goes on. Grass ends it instantly.</p>
+      <ul class="controls-list">
+        <li><span>Steer left</span><span><kbd>A</kbd> or <kbd>←</kbd></span></li>
+        <li><span>Steer right</span><span><kbd>D</kbd> or <kbd>→</kbd></span></li>
+        <li><span>Pause</span><span><kbd>P</kbd> or <kbd>Esc</kbd></span></li>
+      </ul>
+      <div class="utility-row">
+        <button class="utility" id="pauseBtn" type="button">Pause</button>
+        <button class="utility" id="soundBtn" type="button" aria-pressed="true">Sound: on</button>
+      </div>
+      <p class="tip">On a phone, hold either steering button. You can also drag anywhere on the road.</p>
+    </aside>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+      var canvas = document.getElementById('game');
+      var ctx = canvas.getContext('2d');
+      var overlay = document.getElementById('overlay');
+      var overlayText = document.getElementById('overlayText');
+      var result = document.getElementById('result');
+      var startBtn = document.getElementById('startBtn');
+      var pauseBtn = document.getElementById('pauseBtn');
+      var soundBtn = document.getElementById('soundBtn');
+      var scoreEl = document.getElementById('score');
+      var bestEl = document.getElementById('best');
+      var leftBtn = document.getElementById('leftBtn');
+      var rightBtn = document.getElementById('rightBtn');
+
+      var W = canvas.width, H = canvas.height;
+      var state = 'ready';
+      var elapsed = 0, best = 0, lastTime = 0, distance = 0;
+      var road = [], center = W / 2, targetCenter = W / 2, targetWidth = 430;
+      var nextTurn = 0, carX = W / 2, carVX = 0, shake = 0;
+      var left = false, right = false, dragging = false, dragTarget = W / 2;
+      var soundOn = true, audio = null;
+      var rngSeed = 1;
+
+      function random() {
+        rngSeed = (rngSeed * 1664525 + 1013904223) >>> 0;
+        return rngSeed / 4294967296;
+      }
+
+      function makeRoad() {
+        road = [];
+        center = W / 2;
+        targetCenter = center;
+        targetWidth = 430;
+        for (var y = -40; y <= H + 50; y += 12) {
+          road.push({ y: y, c: center, w: targetWidth });
+        }
+      }
+
+      function reset() {
+        elapsed = 0;
+        distance = 0;
+        carX = W / 2;
+        carVX = 0;
+        shake = 0;
+        rngSeed = (Date.now() ^ 0x9e3779b9) >>> 0;
+        nextTurn = 80;
+        left = right = dragging = false;
+        makeRoad();
+        scoreEl.textContent = '0.00 s';
+      }
+
+      function initAudio() {
+        if (!soundOn) return;
+        try {
+          if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+          if (audio.state === 'suspended') audio.resume();
+        } catch (e) {}
+      }
+
+      function tone(freq, duration, type, volume, slide) {
+        if (!soundOn) return;
+        initAudio();
+        if (!audio) return;
+        var t = audio.currentTime;
+        var osc = audio.createOscillator();
+        var gain = audio.createGain();
+        osc.type = type || 'square';
+        osc.frequency.setValueAtTime(freq, t);
+        if (slide) osc.frequency.exponentialRampToValueAtTime(slide, t + duration);
+        gain.gain.setValueAtTime(volume || .035, t);
+        gain.gain.exponentialRampToValueAtTime(.0001, t + duration);
+        osc.connect(gain); gain.connect(audio.destination);
+        osc.start(t); osc.stop(t + duration);
+      }
+
+      function startGame() {
+        initAudio();
+        reset();
+        state = 'playing';
+        overlay.hidden = true;
+        pauseBtn.textContent = 'Pause';
+        tone(520, .05, 'square', .025, 680);
+        lastTime = performance.now();
+      }
+
+      function endGame() {
+        state = 'over';
+        shake = 18;
+        best = Math.max(best, elapsed);
+        bestEl.textContent = best.toFixed(2) + ' s';
+        result.hidden = false;
+        result.innerHTML = '<strong>' + elapsed.toFixed(2) + ' s</strong>' + (elapsed >= best ? 'Best run this visit.' : 'Best: ' + best.toFixed(2) + ' s');
+        overlayText.textContent = 'The shoulder caught you. Reset and read the next bend.';
+        startBtn.textContent = 'Run again';
+        tone(180, .35, 'sawtooth', .06, 55);
+        setTimeout(function () { overlay.hidden = false; }, 260);
+      }
+
+      function togglePause() {
+        if (state === 'playing') {
+          state = 'paused';
+          pauseBtn.textContent = 'Resume';
+          overlayText.textContent = 'Run paused. Your time is safe until you continue.';
+          result.hidden = true;
+          startBtn.textContent = 'Resume';
+          overlay.hidden = false;
+        } else if (state === 'paused') {
+          initAudio();
+          state = 'playing';
+          pauseBtn.textContent = 'Pause';
+          overlay.hidden = true;
+          lastTime = performance.now();
+        }
+      }
+
+      function addRoadPoint(speed) {
+        nextTurn -= speed;
+        if (nextTurn <= 0) {
+          var difficulty = Math.min(1, elapsed / 28);
+          targetCenter = 155 + random() * 410;
+          targetWidth = 430 - difficulty * 150 + random() * 36;
+          nextTurn = 100 + random() * (170 - difficulty * 60);
+        }
+        center += (targetCenter - center) * .028;
+        var oldW = road.length ? road[0].w : targetWidth;
+        var width = oldW + (targetWidth - oldW) * .045;
+        road.unshift({ y: road[0].y - 12, c: center, w: width });
+      }
+
+      function update(dt) {
+        elapsed += dt;
+        scoreEl.textContent = elapsed.toFixed(2) + ' s';
+        var speed = 185 + Math.min(215, elapsed * 4.1);
+        distance += speed * dt;
+
+        for (var i = 0; i < road.length; i++) road[i].y += speed * dt;
+        while (road[0].y > -15) addRoadPoint(12);
+        while (road.length && road[road.length - 1].y > H + 45) road.pop();
+
+        var steer = (right ? 1 : 0) - (left ? 1 : 0);
+        if (dragging) {
+          var delta = dragTarget - carX;
+          steer = Math.max(-1, Math.min(1, delta / 55));
+        }
+        carVX += steer * 760 * dt;
+        carVX *= Math.pow(.018, dt);
+        carVX = Math.max(-330, Math.min(330, carVX));
+        carX += carVX * dt;
+        carX = Math.max(24, Math.min(W - 24, carX));
+
+        var carY = H * .76;
+        var sample = road[0];
+        for (i = 1; i < road.length; i++) {
+          if (Math.abs(road[i].y - carY) < Math.abs(sample.y - carY)) sample = road[i];
+        }
+        var margin = 24;
+        if (carX - margin < sample.c - sample.w / 2 || carX + margin > sample.c + sample.w / 2) endGame();
+      }
+
+      function roadPath(side) {
+        ctx.beginPath();
+        for (var i = 0; i < road.length; i++) {
+          var x = road[i].c + side * road[i].w / 2;
+          if (i === 0) ctx.moveTo(x, road[i].y); else ctx.lineTo(x, road[i].y);
+        }
+      }
+
+      function draw() {
+        ctx.save();
+        if (shake > .1) {
+          ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
+          shake *= .84;
+        }
+        ctx.fillStyle = '#aebba7';
+        ctx.fillRect(-20, -20, W + 40, H + 40);
+
+        // Sparse calculator-pixel grass texture.
+        ctx.fillStyle = 'rgba(43, 60, 42, .16)';
+        var step = 34;
+        var off = distance % step;
+        for (var y = -step + off; y < H; y += step) {
+          for (var x = ((Math.floor(y / step) & 1) ? 11 : 0); x < W; x += 38) {
+            ctx.fillRect(x, y, 3, 3);
+          }
+        }
+
+        // Road body.
+        ctx.beginPath();
+        for (var i = 0; i < road.length; i++) {
+          var p = road[i];
+          if (i === 0) ctx.moveTo(p.c - p.w / 2, p.y); else ctx.lineTo(p.c - p.w / 2, p.y);
+        }
+        for (i = road.length - 1; i >= 0; i--) {
+          p = road[i];
+          ctx.lineTo(p.c + p.w / 2, p.y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = '#d7ddd1';
+        ctx.fill();
+
+        // Solid shoulders.
+        ctx.lineWidth = 9;
+        ctx.strokeStyle = '#1b231c';
+        roadPath(-1); ctx.stroke();
+        roadPath(1); ctx.stroke();
+
+        // Dashed edge markers just inside the road.
+        ctx.setLineDash([18, 24]);
+        ctx.lineDashOffset = distance * .45;
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'rgba(28,36,29,.42)';
+        ctx.beginPath();
+        for (i = 0; i < road.length; i++) {
+          p = road[i]; var lx = p.c - p.w / 2 + 21;
+          if (i === 0) ctx.moveTo(lx, p.y); else ctx.lineTo(lx, p.y);
+        }
+        ctx.stroke();
+        ctx.beginPath();
+        for (i = 0; i < road.length; i++) {
+          p = road[i]; var rx = p.c + p.w / 2 - 21;
+          if (i === 0) ctx.moveTo(rx, p.y); else ctx.lineTo(rx, p.y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Center dashes.
+        ctx.fillStyle = 'rgba(38,47,39,.36)';
+        for (i = 0; i < road.length; i += 5) {
+          p = road[i];
+          ctx.fillRect(p.c - 3, p.y, 6, 28);
+        }
+
+        drawCar(carX, H * .76, carVX / 330);
+        ctx.restore();
+      }
+
+      function drawCar(x, y, lean) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(lean * .08);
+        ctx.fillStyle = '#172018';
+        ctx.fillRect(-25, -40, 50, 80);
+        ctx.fillStyle = '#dce4d7';
+        ctx.fillRect(-16, -22, 32, 26);
+        ctx.fillStyle = '#172018';
+        ctx.fillRect(-20, -34, 9, 5);
+        ctx.fillRect(11, -34, 9, 5);
+        ctx.fillStyle = '#7f9180';
+        ctx.fillRect(-17, 16, 34, 13);
+        ctx.fillStyle = '#f1f5ed';
+        ctx.fillRect(-18, -39, 9, 5);
+        ctx.fillRect(9, -39, 9, 5);
+        ctx.restore();
+      }
+
+      function frame(now) {
+        var dt = Math.min(.04, (now - lastTime) / 1000 || 0);
+        lastTime = now;
+        if (state === 'playing') update(dt);
+        draw();
+        requestAnimationFrame(frame);
+      }
+
+      function setKey(key, down) {
+        if (key === 'ArrowLeft' || key === 'a' || key === 'A') left = down;
+        if (key === 'ArrowRight' || key === 'd' || key === 'D') right = down;
+      }
+      window.addEventListener('keydown', function (e) {
+        if (['ArrowLeft','ArrowRight','a','A','d','D','p','P','Escape',' ','Enter'].indexOf(e.key) >= 0) e.preventDefault();
+        setKey(e.key, true);
+        if (!e.repeat && (e.key === 'p' || e.key === 'P' || e.key === 'Escape')) togglePause();
+        if (!e.repeat && (e.key === ' ' || e.key === 'Enter') && (state === 'ready' || state === 'over')) startGame();
+        else if (!e.repeat && (e.key === ' ' || e.key === 'Enter') && state === 'paused') togglePause();
+      });
+      window.addEventListener('keyup', function (e) { setKey(e.key, false); });
+
+      function bindHold(btn, side) {
+        function on(e) { e.preventDefault(); initAudio(); if (side < 0) left = true; else right = true; btn.classList.add('active'); }
+        function off(e) { if (e) e.preventDefault(); if (side < 0) left = false; else right = false; btn.classList.remove('active'); }
+        btn.addEventListener('pointerdown', on);
+        btn.addEventListener('pointerup', off);
+        btn.addEventListener('pointercancel', off);
+        btn.addEventListener('pointerleave', off);
+      }
+      bindHold(leftBtn, -1); bindHold(rightBtn, 1);
+
+      function dragPosition(e) {
+        var r = canvas.getBoundingClientRect();
+        dragTarget = (e.clientX - r.left) / r.width * W;
+      }
+      canvas.addEventListener('pointerdown', function (e) {
+        if (state !== 'playing') return;
+        e.preventDefault(); initAudio(); dragging = true; dragPosition(e); canvas.setPointerCapture(e.pointerId);
+      });
+      canvas.addEventListener('pointermove', function (e) { if (dragging) { e.preventDefault(); dragPosition(e); } });
+      canvas.addEventListener('pointerup', function (e) { dragging = false; try { canvas.releasePointerCapture(e.pointerId); } catch (err) {} });
+      canvas.addEventListener('pointercancel', function () { dragging = false; });
+
+      startBtn.addEventListener('click', function () { if (state === 'paused') togglePause(); else startGame(); });
+      pauseBtn.addEventListener('click', togglePause);
+      soundBtn.addEventListener('click', function () {
+        soundOn = !soundOn;
+        soundBtn.textContent = 'Sound: ' + (soundOn ? 'on' : 'off');
+        soundBtn.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+        if (soundOn) { initAudio(); tone(600, .06, 'square', .025, 760); }
+      });
+      document.addEventListener('selectstart', function (e) { e.preventDefault(); });
+      document.addEventListener('contextmenu', function (e) { if (e.target.closest && e.target.closest('.frame, .touch-controls')) e.preventDefault(); });
+      document.addEventListener('visibilitychange', function () { if (document.hidden && state === 'playing') togglePause(); });
+
+      makeRoad();
+      lastTime = performance.now();
+      requestAnimationFrame(frame);
+    }());
+  </script>
+</body>
+</html>
