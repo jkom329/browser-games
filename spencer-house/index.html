@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="icon" href="data:," />
+  <title>Spencer House</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600&display=swap');
+    :root{
+      color-scheme:light dark;
+      --paper:#f0eee8; --ink:#171918; --muted:#5c625e; --line:#c8c7c0;
+      --panel:#fbfaf6; --accent:#7c2e25; --accent-2:#af8761; --deep:#171a18;
+      --blue:#123f5b; --blue-2:#0b3149; --blue-line:#9bc3cf; --blue-ink:#eefbff;
+      --shadow:0 18px 48px rgba(20,22,20,.13);
+    }
+    @media(prefers-color-scheme:dark){
+      :root{--paper:#151715;--ink:#f2f0e9;--muted:#aeb3ad;--line:#363a36;--panel:#1d201d;--accent:#d06c5e;--accent-2:#d2aa7f;--deep:#0e100f;--shadow:0 20px 60px rgba(0,0,0,.35)}
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:"Source Sans 3",sans-serif}
+    body{overflow-x:hidden}
+    button{font:inherit;color:inherit}
+    .shell{width:min(1460px,100%);margin:0 auto;padding:clamp(14px,2.4vw,34px)}
+    .topline{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:18px}
+    .mode-switch{display:inline-flex;border:1px solid var(--line);background:var(--panel);padding:4px;box-shadow:var(--shadow)}
+    .mode-switch button{border:0;background:transparent;padding:10px 17px;cursor:pointer;font-weight:600;letter-spacing:.01em}
+    .mode-switch button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+    .status{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);text-align:right}
+    .intro{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);align-items:end;gap:30px;border-top:1px solid var(--line);padding:clamp(26px,5vw,72px) 0 clamp(22px,3vw,38px)}
+    h1{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:clamp(40px,6vw,78px);line-height:.92;letter-spacing:-.035em;margin:0;max-width:800px}
+    .intro p{margin:0;color:var(--muted);font-size:clamp(16px,1.4vw,20px);line-height:1.55;max-width:560px}
+    .view{display:none}.view.active{display:block}
+    .walk-layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:18px;align-items:start}
+    .viewport{position:relative;background:#111;border:1px solid #3a3b37;box-shadow:var(--shadow);min-width:0;overflow:hidden}
+    #scene{display:block;width:100%;height:auto;aspect-ratio:16/9;touch-action:none;cursor:grab;background:#111}
+    #scene:active{cursor:grabbing}
+    .scene-hud{position:absolute;inset:14px 14px auto 14px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;gap:12px}
+    .location,.floor-indicator{background:rgba(10,12,11,.78);color:#f7f4eb;border:1px solid rgba(255,255,255,.18);padding:8px 11px;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+    .crosshair{position:absolute;left:50%;top:50%;width:20px;height:20px;transform:translate(-50%,-50%);opacity:.55;pointer-events:none}
+    .crosshair:before,.crosshair:after{content:"";position:absolute;background:#fff}.crosshair:before{width:20px;height:1px;top:9px}.crosshair:after{width:1px;height:20px;left:9px}
+    .stair-prompt{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(240,238,232,.92);color:#181a18;border:0;padding:9px 14px;font-weight:700;display:none;cursor:pointer;white-space:nowrap}
+    .stair-prompt.show{display:block}
+    .control-strip{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:#121412;color:#eae8e0;border-top:1px solid #3a3b37}
+    .control-hint{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#aeb3ac;line-height:1.5}
+    .icon-btn{border:1px solid #4e524d;background:#1d201d;color:#fff;padding:8px 11px;cursor:pointer}
+    .touch-controls{display:none;gap:7px;align-items:center}
+    .touch-controls button{width:42px;height:42px;border:1px solid #62675f;background:#252824;color:#fff;font-size:18px;touch-action:none;user-select:none}
+    .touch-controls .wide{width:52px}
+    .side{border-top:4px solid var(--accent);background:var(--panel);padding:22px;box-shadow:var(--shadow)}
+    .side h2{font-family:"Cormorant Garamond",serif;font-size:28px;margin:0 0 10px}
+    .side p{color:var(--muted);line-height:1.55;margin:0 0 18px}
+    .stat-grid{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);border-left:1px solid var(--line);margin:20px 0}
+    .stat{padding:13px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .stat strong{display:block;font-family:"Cormorant Garamond",serif;font-size:25px;font-weight:600}
+    .stat span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+    .route-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+    .route-list li{display:grid;grid-template-columns:26px 1fr;gap:9px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.35}
+    .route-list b{font-family:"IBM Plex Mono",monospace;color:var(--accent);font-size:12px}
+    .blueprint-wrap{background:var(--blue);color:var(--blue-ink);box-shadow:var(--shadow);border:1px solid #08293d}
+    .bp-toolbar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(164,207,219,.35);background:var(--blue-2)}
+    .bp-tabs{display:flex;gap:4px}
+    .bp-tabs button,.bp-toolbar .detail-btn{border:1px solid rgba(191,228,237,.45);background:transparent;color:var(--blue-ink);padding:8px 13px;cursor:pointer;font-family:"IBM Plex Mono",monospace;font-size:12px}
+    .bp-tabs button[aria-selected="true"]{background:var(--blue-ink);color:var(--blue-2)}
+    .bp-stage{display:grid;grid-template-columns:minmax(0,1fr) 280px;min-height:640px}
+    .drawing{padding:24px;overflow:hidden;background-color:var(--blue);background-image:linear-gradient(rgba(154,197,209,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(154,197,209,.08) 1px,transparent 1px);background-size:20px 20px}
+    .plan{width:100%;height:auto;max-height:720px;display:block}
+    .plan[hidden]{display:none}
+    .bp-notes{padding:22px;border-left:1px solid rgba(164,207,219,.35);font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.55}
+    .bp-notes h2{font-family:"Cormorant Garamond",serif;font-size:27px;line-height:1;margin:0 0 16px}
+    .bp-notes h3{font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin:22px 0 8px;color:var(--blue-line)}
+    .bp-notes ul{padding-left:16px;margin:0}.bp-notes li{margin-bottom:7px}
+    .warning{margin-top:20px;padding-top:16px;border-top:1px solid rgba(164,207,219,.35);color:#bdd8df}
+    .detail-panel{display:none;padding:18px 22px;border-top:1px solid rgba(164,207,219,.35);grid-template-columns:repeat(4,1fr);gap:18px;background:#092e44}
+    .detail-panel.open{display:grid}
+    .detail-panel strong{display:block;font-family:"Cormorant Garamond",serif;font-size:22px;margin-bottom:5px}
+    .detail-panel span{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#b7d7df;line-height:1.45}
+    .principles{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:32px}
+    .principle{background:var(--panel);padding:clamp(20px,3vw,34px)}
+    .principle .num{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--accent)}
+    .principle h3{font-family:"Cormorant Garamond",serif;font-size:28px;margin:10px 0 8px}
+    .principle p{color:var(--muted);line-height:1.5;margin:0}
+    .footnote{display:flex;justify-content:space-between;gap:20px;border-top:1px solid var(--line);margin-top:34px;padding-top:18px;color:var(--muted);font-size:12px}
+    .help{position:fixed;inset:0;background:rgba(8,10,9,.7);display:none;place-items:center;padding:20px;z-index:10}
+    .help.open{display:grid}.help-card{width:min(520px,100%);background:var(--panel);padding:28px;box-shadow:var(--shadow)}
+    .help-card h2{font-family:"Cormorant Garamond",serif;font-size:34px;margin:0 0 8px}.help-card p{color:var(--muted);line-height:1.6}.help-card button{border:0;background:var(--ink);color:var(--paper);padding:10px 16px;cursor:pointer}
+    @media(max-width:980px){
+      .intro{grid-template-columns:1fr;gap:16px}.walk-layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr;gap:18px}.side h2,.side>p{grid-column:1/-1}.bp-stage{grid-template-columns:1fr}.bp-notes{border-left:0;border-top:1px solid rgba(164,207,219,.35);display:grid;grid-template-columns:1fr 1fr;gap:0 24px}.warning{grid-column:1/-1}.detail-panel.open{grid-template-columns:1fr 1fr}.principles{grid-template-columns:1fr}
+    }
+    @media(max-width:660px){
+      .shell{padding:10px}.topline{align-items:flex-start}.mode-switch{flex:1}.mode-switch button{flex:1;padding:9px 10px}.status{display:none}.intro{padding:28px 0 20px}.intro p{font-size:15px}.walk-layout{gap:10px}#scene{aspect-ratio:4/3}.scene-hud{inset:8px 8px auto 8px}.control-hint{display:none}.touch-controls{display:flex}.control-strip{padding:8px}.side{display:block;padding:18px}.bp-toolbar{padding:10px}.bp-stage{min-height:0}.drawing{padding:6px}.bp-notes{display:block;padding:18px}.detail-panel.open{grid-template-columns:1fr}.footnote{display:block}.footnote span{display:block;margin-bottom:6px}.principles{margin-top:18px}
+    }
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topline">
+      <div class="mode-switch" role="tablist" aria-label="House views">
+        <button id="walkTab" role="tab" aria-selected="true">Walkthrough</button>
+        <button id="blueprintTab" role="tab" aria-selected="false">Blueprint</button>
+      </div>
+      <div class="status">Concept study 01 · 7,240 conditioned sq ft</div>
+    </div>
+
+    <section class="intro" aria-labelledby="mainHeading">
+      <h1 id="mainHeading">Enter through the marble hall.</h1>
+      <p>A grand, symmetrical residence shaped by the Spencer Mansion’s theatrical arrival — reworked as a livable home with daylight, direct circulation, a real kitchen core, and the luminous finishes carried forward from the current house.</p>
+    </section>
+
+    <main>
+      <section id="walkView" class="view active" aria-labelledby="mainHeading">
+        <div class="walk-layout">
+          <div class="viewport">
+            <canvas id="scene" width="1280" height="720" aria-label="Interactive first-person walkthrough of the house"></canvas>
+            <div class="scene-hud"><div><div class="location" id="location">Grand Hall</div><div class="location" id="finishDetail" style="margin-top:6px;color:#d8c7a9">24' volume · statement chandelier</div></div><div class="floor-indicator" id="floorLabel">Ground floor</div></div>
+            <div class="crosshair" aria-hidden="true"></div>
+            <button id="stairButton" class="stair-prompt">Use the split stair · E</button>
+            <div class="control-strip">
+              <div class="control-hint">WASD / arrows to move · drag to look · E at stairs</div>
+              <div class="touch-controls" aria-label="Touch movement controls">
+                <button data-hold="left" aria-label="Turn left">↶</button>
+                <button data-hold="forward" class="wide" aria-label="Move forward">↑</button>
+                <button data-hold="back" aria-label="Move backward">↓</button>
+                <button data-hold="right" aria-label="Turn right">↷</button>
+              </div>
+              <button id="helpButton" class="icon-btn" aria-label="Open walkthrough help">Controls</button>
+            </div>
+          </div>
+          <aside class="side">
+            <h2>A mansion with a daily rhythm</h2>
+            <p>The central hall remains cinematic: a true two-story foyer and a large chandelier anchor the split stair. The plan around it is practical, while full-height cabinetry, pearl tile, decorative lighting, and framed beveled mirrors preserve the house’s signature finishes.</p>
+            <div class="stat-grid">
+              <div class="stat"><strong>5</strong><span>bedrooms</span></div>
+              <div class="stat"><strong>6½</strong><span>bathrooms</span></div>
+              <div class="stat"><strong>3</strong><span>levels</span></div>
+              <div class="stat"><strong>3</strong><span>car garage</span></div>
+            </div>
+            <ol class="route-list">
+              <li><b>01</b><span>Begin in the two-story grand hall facing the split stair.</span></li>
+              <li><b>02</b><span>Circle left through library, conservatory, and dining room.</span></li>
+              <li><b>03</b><span>Circle right through salon, study, and the kitchen wing.</span></li>
+              <li><b>04</b><span>Approach the stair and press E to visit the gallery.</span></li>
+            </ol>
+          </aside>
+        </div>
+      </section>
+
+      <section id="blueprintView" class="view" aria-labelledby="bpHeading">
+        <div class="blueprint-wrap">
+          <div class="bp-toolbar">
+            <div class="bp-tabs" role="tablist" aria-label="Blueprint floors">
+              <button class="bp-tab" data-plan="ground" aria-selected="true">A1 · Ground</button>
+              <button class="bp-tab" data-plan="upper" aria-selected="false">A2 · Upper</button>
+              <button class="bp-tab" data-plan="lower" aria-selected="false">A3 · Lower</button>
+            </div>
+            <button class="detail-btn" id="detailButton" aria-expanded="false">Construction notes</button>
+          </div>
+          <div class="bp-stage">
+            <div class="drawing">
+              <svg id="groundPlan" class="plan" viewBox="0 0 1000 780" role="img" aria-label="Ground floor architectural concept plan">
+                <defs><style>.w{fill:none;stroke:#eefbff;stroke-width:12}.i{fill:none;stroke:#c2e2e9;stroke-width:5}.d{fill:none;stroke:#9bc3cf;stroke-width:2}.t{fill:#eefbff;font:600 18px 'IBM Plex Mono',monospace}.s{fill:#b5d6de;font:13px 'IBM Plex Mono',monospace}.dim{fill:#9bc3cf;font:12px 'IBM Plex Mono',monospace}.f{fill:rgba(238,251,255,.035);stroke:none}.st{fill:none;stroke:#eefbff;stroke-width:3}</style></defs>
+                <text x="35" y="38" class="t">A1.0  GROUND FLOOR PLAN</text><text x="35" y="59" class="s">72'-0" × 58'-0" overall · 3,880 conditioned sf</text>
+                <rect x="110" y="105" width="720" height="580" class="f"/><rect x="110" y="105" width="720" height="580" class="w"/>
+                <!-- major partitions -->
+                <path d="M350 105V300 M590 105V300 M350 465V685 M590 465V685 M110 300H350 M590 300H830 M110 465H350 M590 465H830" class="i"/>
+                <path d="M350 300V685 M590 300V685 M350 390H590" class="i"/>
+                <!-- openings -->
+                <path d="M350 205v70 M590 205v70 M350 335v55 M590 335v55 M350 505v60 M590 505v60 M465 685h70" stroke="#123f5b" stroke-width="10"/>
+                <!-- doors swings -->
+                <path d="M350 275h-55 M295 275a55 55 0 0 1 55-55 M590 275h55 M645 275a55 55 0 0 0-55-55 M350 390h-55 M295 390a55 55 0 0 0 55-55 M590 390h55 M645 390a55 55 0 0 1-55-55" class="d"/>
+                <!-- central split stair -->
+                <rect x="405" y="125" width="130" height="145" class="st"/><path d="M405 270l65-110 65 110 M470 160v110 M415 250h110 M423 235h94 M431 220h78 M440 205h60 M448 190h44" class="st"/>
+                <text x="470" y="290" text-anchor="middle" class="s">SPLIT STAIR</text>
+                <!-- rooms -->
+                <text x="230" y="185" text-anchor="middle" class="t">LIBRARY</text><text x="230" y="207" text-anchor="middle" class="s">20'-0" × 18'-6"</text>
+                <text x="710" y="185" text-anchor="middle" class="t">SALON</text><text x="710" y="207" text-anchor="middle" class="s">20'-0" × 18'-6"</text>
+                <text x="230" y="373" text-anchor="middle" class="t">DINING</text><text x="230" y="395" text-anchor="middle" class="s">20'-0" × 15'-0"</text>
+                <text x="710" y="345" text-anchor="middle" class="t">KITCHEN</text><text x="710" y="367" text-anchor="middle" class="s">20'-0" × 15'-0" · 12' ISLAND</text><text x="710" y="393" text-anchor="middle" class="s">CEILING-HEIGHT CABINETRY</text><text x="710" y="416" text-anchor="middle" class="s">MOTHER-OF-PEARL TILE · CHANDELIERS</text>
+                <text x="470" y="345" text-anchor="middle" class="t">TWO-STORY FOYER</text><text x="470" y="367" text-anchor="middle" class="s">24'-0" × 28'-0" · OPEN ABOVE</text><text x="470" y="387" text-anchor="middle" class="s">LARGE CENTERED CHANDELIER</text>
+                <text x="230" y="565" text-anchor="middle" class="t">CONSERVATORY</text><text x="230" y="587" text-anchor="middle" class="s">20'-0" × 22'-0"</text>
+                <text x="710" y="545" text-anchor="middle" class="t">FAMILY ROOM</text><text x="710" y="567" text-anchor="middle" class="s">20'-0" × 22'-0"</text>
+                <text x="470" y="555" text-anchor="middle" class="t">ENTRY</text><text x="470" y="577" text-anchor="middle" class="s">VESTIBULE + COAT</text>
+                <!-- dimensions -->
+                <path d="M110 80H830 M110 70v20 M830 70v20" class="d"/><text x="470" y="76" text-anchor="middle" class="dim">72'-0"</text>
+                <path d="M85 105V685 M75 105h20 M75 685h20" class="d"/><text x="70" y="395" transform="rotate(-90 70 395)" text-anchor="middle" class="dim">58'-0"</text>
+                <!-- north + scale -->
+                <path d="M900 165v-70l-13 25h26z" fill="#eefbff"/><text x="900" y="188" text-anchor="middle" class="t">N</text>
+                <path d="M690 735h180 M690 728v14 M780 728v14 M870 728v14" class="d"/><text x="690" y="760" class="dim">0</text><text x="765" y="760" class="dim">10'</text><text x="850" y="760" class="dim">20'</text>
+              </svg>
+
+              <svg id="upperPlan" class="plan" viewBox="0 0 1000 780" role="img" aria-label="Upper floor architectural concept plan" hidden>
+                <defs><style>.w{fill:none;stroke:#eefbff;stroke-width:12}.i{fill:none;stroke:#c2e2e9;stroke-width:5}.d{fill:none;stroke:#9bc3cf;stroke-width:2}.t{fill:#eefbff;font:600 18px 'IBM Plex Mono',monospace}.s{fill:#b5d6de;font:13px 'IBM Plex Mono',monospace}.dim{fill:#9bc3cf;font:12px 'IBM Plex Mono',monospace}.f{fill:rgba(238,251,255,.035);stroke:none}.void{fill:rgba(9,46,68,.8);stroke:#9bc3cf;stroke-width:2;stroke-dasharray:10 8}</style></defs>
+                <text x="35" y="38" class="t">A2.0  UPPER FLOOR PLAN</text><text x="35" y="59" class="s">3,360 conditioned sf · four suites + gallery</text>
+                <rect x="110" y="105" width="720" height="580" class="f"/><rect x="110" y="105" width="720" height="580" class="w"/>
+                <path d="M350 105V685 M590 105V685 M110 390H350 M590 390H830 M350 260H590 M350 555H590" class="i"/>
+                <rect x="385" y="300" width="170" height="210" class="void"/><text x="470" y="398" text-anchor="middle" class="t">OPEN TO</text><text x="470" y="420" text-anchor="middle" class="t">HALL</text>
+                <text x="230" y="220" text-anchor="middle" class="t">PRIMARY BED</text><text x="230" y="242" text-anchor="middle" class="s">20'-0" × 22'-0"</text><text x="230" y="304" text-anchor="middle" class="s">DRESSING + BATH</text>
+                <text x="710" y="220" text-anchor="middle" class="t">BEDROOM 2</text><text x="710" y="242" text-anchor="middle" class="s">20'-0" × 22'-0"</text><text x="710" y="304" text-anchor="middle" class="s">ENSUITE + WIC</text>
+                <text x="230" y="505" text-anchor="middle" class="t">BEDROOM 3</text><text x="230" y="527" text-anchor="middle" class="s">20'-0" × 24'-0"</text><text x="230" y="580" text-anchor="middle" class="s">ENSUITE + WIC</text>
+                <text x="710" y="505" text-anchor="middle" class="t">BEDROOM 4</text><text x="710" y="527" text-anchor="middle" class="s">20'-0" × 24'-0"</text><text x="710" y="580" text-anchor="middle" class="s">ENSUITE + WIC</text>
+                <text x="470" y="205" text-anchor="middle" class="t">UPPER GALLERY</text><text x="470" y="228" text-anchor="middle" class="s">BRIDGE + READING ALCOVE</text><text x="470" y="602" text-anchor="middle" class="t">LAUNDRY</text><text x="470" y="625" text-anchor="middle" class="s">LINEN · SERVICE STAIR</text>
+                <path d="M110 80H830 M110 70v20 M830 70v20" class="d"/><text x="470" y="76" text-anchor="middle" class="dim">72'-0"</text><path d="M85 105V685 M75 105h20 M75 685h20" class="d"/><text x="70" y="395" transform="rotate(-90 70 395)" text-anchor="middle" class="dim">58'-0"</text>
+                <path d="M900 165v-70l-13 25h26z" fill="#eefbff"/><text x="900" y="188" text-anchor="middle" class="t">N</text><path d="M690 735h180 M690 728v14 M780 728v14 M870 728v14" class="d"/><text x="690" y="760" class="dim">0</text><text x="765" y="760" class="dim">10'</text><text x="850" y="760" class="dim">20'</text>
+              </svg>
+
+              <svg id="lowerPlan" class="plan" viewBox="0 0 1000 780" role="img" aria-label="Lower floor architectural concept plan" hidden>
+                <defs><style>.w{fill:none;stroke:#eefbff;stroke-width:12}.i{fill:none;stroke:#c2e2e9;stroke-width:5}.d{fill:none;stroke:#9bc3cf;stroke-width:2}.t{fill:#eefbff;font:600 18px 'IBM Plex Mono',monospace}.s{fill:#b5d6de;font:13px 'IBM Plex Mono',monospace}.dim{fill:#9bc3cf;font:12px 'IBM Plex Mono',monospace}.f{fill:rgba(238,251,255,.035);stroke:none}</style></defs>
+                <text x="35" y="38" class="t">A3.0  LOWER FLOOR PLAN</text><text x="35" y="59" class="s">2,430 finished sf + plant/storage</text>
+                <rect x="110" y="105" width="720" height="580" class="f"/><rect x="110" y="105" width="720" height="580" class="w"/>
+                <path d="M390 105V685 M610 105V685 M110 385H390 M610 385H830 M390 300H610 M390 530H610" class="i"/>
+                <text x="250" y="230" text-anchor="middle" class="t">SCREENING ROOM</text><text x="250" y="252" text-anchor="middle" class="s">28'-0" × 26'-0" · 10 SEATS</text>
+                <text x="720" y="230" text-anchor="middle" class="t">FITNESS</text><text x="720" y="252" text-anchor="middle" class="s">22'-0" × 26'-0"</text>
+                <text x="250" y="515" text-anchor="middle" class="t">GUEST SUITE</text><text x="250" y="537" text-anchor="middle" class="s">BED 5 · BATH · COURTYARD</text>
+                <text x="720" y="515" text-anchor="middle" class="t">WORKSHOP</text><text x="720" y="537" text-anchor="middle" class="s">PROJECT BENCH · STORAGE</text>
+                <text x="500" y="202" text-anchor="middle" class="t">WINE / TASTING</text><text x="500" y="232" text-anchor="middle" class="s">TEMPERED ROOM</text>
+                <text x="500" y="420" text-anchor="middle" class="t">LOWER HALL</text><text x="500" y="450" text-anchor="middle" class="s">STAIR + ELEVATOR ROUGH-IN</text>
+                <text x="500" y="605" text-anchor="middle" class="t">MECHANICAL</text><text x="500" y="630" text-anchor="middle" class="s">TWO ZONES · SUMP · ELECTRICAL</text>
+                <path d="M110 80H830 M110 70v20 M830 70v20" class="d"/><text x="470" y="76" text-anchor="middle" class="dim">72'-0"</text><path d="M85 105V685 M75 105h20 M75 685h20" class="d"/><text x="70" y="395" transform="rotate(-90 70 395)" text-anchor="middle" class="dim">58'-0"</text>
+                <path d="M900 165v-70l-13 25h26z" fill="#eefbff"/><text x="900" y="188" text-anchor="middle" class="t">N</text><path d="M690 735h180 M690 728v14 M780 728v14 M870 728v14" class="d"/><text x="690" y="760" class="dim">0</text><text x="765" y="760" class="dim">10'</text><text x="850" y="760" class="dim">20'</text>
+              </svg>
+            </div>
+            <aside class="bp-notes">
+              <h2 id="bpHeading">Architectural concept set</h2>
+              <div><h3>Planning module</h3><ul><li>4'-0" planning grid</li><li>72' × 58' main body</li><li>12' typical ceiling; 24' hall</li><li>36" clear interior doors</li></ul></div>
+              <div><h3>Practical revisions</h3><ul><li>Continuous circulation loop</li><li>Kitchen beside dining + family</li><li>Stacked wet walls</li><li>Service stair and elevator rough-in</li><li>Daylight on every occupied room</li></ul></div>
+              <div><h3>Finish schedule</h3><ul><li>Full-height kitchen cabinetry</li><li>Mother-of-pearl kitchen backsplash</li><li>Large foyer chandelier; kitchen + bath chandeliers</li><li>White polished marble at entry + foyer; soft gray/black veining</li><li>All mirrors beveled and framed</li><li>Painted wainscoting + crown molding</li><li>7¼" baseboards; substantial door/window trim</li><li>Tall feature window at stair landing</li></ul></div>
+              <p class="warning"><strong>Concept, not a permit set.</strong><br>This drawing establishes room relationships, target dimensions, and area. A licensed architect and engineers must adapt it to the site, structure, energy code, egress, accessibility, and local permitting requirements before construction.</p>
+            </aside>
+          </div>
+          <div class="detail-panel" id="detailPanel">
+            <div><strong>Structure</strong><span>Concept assumes steel at the open hall, engineered wood floor trusses, and reinforced concrete at the lower level.</span></div>
+            <div><strong>Envelope</strong><span>Target high-performance wall assembly with exterior continuous insulation; final R-values are climate-zone dependent.</span></div>
+            <div><strong>Life safety</strong><span>Two enclosed stairs serve all levels. Egress windows, guards, smoke control, and fire separation require code review.</span></div>
+            <div><strong>Next set</strong><span>Site plan, elevations, wall sections, reflected ceiling plans, MEP layouts, structural schedules, and door/window schedules.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="principles" aria-label="Design principles">
+        <article class="principle"><div class="num">01 / KEEP THE DRAMA</div><h3>The split stair stays.</h3><p>The arrival sequence, double-height hall, bridge, and symmetrical stair are the emotional center of the house.</p></article>
+        <article class="principle"><div class="num">02 / REMOVE THE MAZE</div><h3>Every room earns a route.</h3><p>Public rooms connect in a clear loop. Service circulation is short, legible, and separate from the formal entry.</p></article>
+        <article class="principle"><div class="num">03 / CARRY THE CRAFT FORWARD</div><h3>Light, pearl, and millwork.</h3><p>Ceiling-height cabinetry, mother-of-pearl tile, wainscoting, crown molding, tall baseboards, framed beveled mirrors, and chandeliers form a consistent finish language.</p></article>
+      </section>
+    </main>
+
+    <div class="footnote"><span>Concept model · dimensions shown are design targets</span><span>Keyboard, mouse, and touch supported</span></div>
+  </div>
+
+  <div class="help" id="help" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="help-card"><h2 id="helpTitle">Walk the house</h2><p><strong>Desktop:</strong> W/S or ↑/↓ move. A/D or ←/→ turn. Drag directly on the view to look. Press E near the central staircase to change floors.</p><p><strong>Phone:</strong> hold the four controls below the view. The curved arrows turn; up and down move. Tap “Use the split stair” when it appears.</p><button id="closeHelp">Continue</button></div>
+  </div>
+
+  <script>
+  (function(){
+    'use strict';
+    var walkTab=document.getElementById('walkTab'), blueprintTab=document.getElementById('blueprintTab');
+    var walkView=document.getElementById('walkView'), blueprintView=document.getElementById('blueprintView');
+    var heading=document.getElementById('mainHeading');
+    function setMode(mode){
+      var walk=mode==='walk';
+      walkTab.setAttribute('aria-selected',walk); blueprintTab.setAttribute('aria-selected',!walk);
+      walkView.classList.toggle('active',walk); blueprintView.classList.toggle('active',!walk);
+      heading.textContent=walk?'Enter through the marble hall.':'A plan made to become a real house.';
+      if(walk){ resizeCanvas(); render(); }
+    }
+    walkTab.addEventListener('click',function(){setMode('walk')}); blueprintTab.addEventListener('click',function(){setMode('blueprint')});
+
+    var help=document.getElementById('help');
+    document.getElementById('helpButton').addEventListener('click',function(){help.classList.add('open')});
+    document.getElementById('closeHelp').addEventListener('click',function(){help.classList.remove('open')});
+    help.addEventListener('click',function(e){if(e.target===help)help.classList.remove('open')});
+
+    var tabs=document.querySelectorAll('.bp-tab'), plans={ground:document.getElementById('groundPlan'),upper:document.getElementById('upperPlan'),lower:document.getElementById('lowerPlan')};
+    tabs.forEach(function(tab){tab.addEventListener('click',function(){tabs.forEach(function(t){t.setAttribute('aria-selected','false')});tab.setAttribute('aria-selected','true');Object.keys(plans).forEach(function(k){plans[k].hidden=k!==tab.dataset.plan})})});
+    var detailButton=document.getElementById('detailButton'),detailPanel=document.getElementById('detailPanel');
+    detailButton.addEventListener('click',function(){var open=detailPanel.classList.toggle('open');detailButton.setAttribute('aria-expanded',open);detailButton.textContent=open?'Hide notes':'Construction notes'});
+
+    var canvas=document.getElementById('scene'),ctx=canvas.getContext('2d');
+    var locationEl=document.getElementById('location'),finishEl=document.getElementById('finishDetail'),floorEl=document.getElementById('floorLabel'),stairButton=document.getElementById('stairButton');
+    var MAP_W=24,MAP_H=18;
+    var ground=[
+      '111111111111111111111111',
+      '100000000001100000000001',
+      '100000000001100000000001',
+      '100000000000000000000001',
+      '100000000001100000000001',
+      '100000000001100000000001',
+      '111110111001100111011111',
+      '100000000000000000000001',
+      '100000001100110000000001',
+      '100000001000010000000001',
+      '100000001000010000000001',
+      '111110111000011101011111',
+      '100000000000000000000001',
+      '100000000000000000000001',
+      '100000001000010000000001',
+      '100000001000010000000001',
+      '100000001000010000000001',
+      '111111111110011111111111'
+    ];
+    var upper=[
+      '111111111111111111111111','100000000001100000000001','100000000001100000000001','100000000001100000000001','100000000001100000000001','100000000000000000000001','111110111000011101011111','100000001000010000000001','100000001011110100000001','100000001010010100000001','100000001010010100000001','100000001011110100000001','111110111000011101011111','100000000000000000000001','100000000001100000000001','100000000001100000000001','100000000001100000000001','111111111111111111111111'
+    ];
+    var player={x:11.3,y:15.2,a:-Math.PI/2,floor:0};
+    var keys={},held={forward:false,back:false,left:false,right:false};
+    var FOV=Math.PI/3,depth=24,last=performance.now(),dragging=false,lastX=0;
+    function map(){return player.floor===0?ground:upper}
+    function wallAt(x,y){var gx=Math.floor(x),gy=Math.floor(y);if(gx<0||gy<0||gx>=MAP_W||gy>=MAP_H)return true;return map()[gy][gx]==='1'}
+    function canMove(x,y){var r=.19;return !wallAt(x-r,y-r)&&!wallAt(x+r,y-r)&&!wallAt(x-r,y+r)&&!wallAt(x+r,y+r)}
+    function nearStair(){return player.x>8.3&&player.x<15.7&&player.y>7.4&&player.y<12.1}
+    function useStair(){if(!nearStair())return;player.floor=player.floor?0:1;player.x=player.floor?11.5:11.3;player.y=player.floor?6.5:10.8;player.a=player.floor?Math.PI/2:-Math.PI/2;floorEl.textContent=player.floor?'Upper floor':'Ground floor'}
+    stairButton.addEventListener('click',useStair);
+    window.addEventListener('keydown',function(e){var k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d','e'].indexOf(k)>-1)e.preventDefault();keys[k]=true;if(k==='e')useStair()});
+    window.addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false});
+    document.querySelectorAll('[data-hold]').forEach(function(b){var name=b.dataset.hold;function on(e){e.preventDefault();held[name]=true}function off(e){e.preventDefault();held[name]=false}b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointercancel',off);b.addEventListener('pointerleave',off)});
+    canvas.addEventListener('pointerdown',function(e){dragging=true;lastX=e.clientX;canvas.setPointerCapture(e.pointerId)});
+    canvas.addEventListener('pointermove',function(e){if(dragging){player.a+=(e.clientX-lastX)*.006;lastX=e.clientX}});
+    canvas.addEventListener('pointerup',function(){dragging=false});canvas.addEventListener('pointercancel',function(){dragging=false});
+    function resizeCanvas(){var r=canvas.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,1.5),w=Math.max(640,Math.floor(r.width*d)),h=Math.max(420,Math.floor(r.height*d));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}}
+    window.addEventListener('resize',resizeCanvas);
+    function update(dt){
+      var turn=(keys['a']||keys['arrowleft']||held.left?-1:0)+(keys['d']||keys['arrowright']||held.right?1:0);player.a+=turn*dt*1.8;
+      var move=(keys['w']||keys['arrowup']||held.forward?1:0)+(keys['s']||keys['arrowdown']||held.back?-1:0);var speed=2.7*dt*move,nx=player.x+Math.cos(player.a)*speed,ny=player.y+Math.sin(player.a)*speed;if(canMove(nx,player.y))player.x=nx;if(canMove(player.x,ny))player.y=ny;
+      stairButton.classList.toggle('show',nearStair());
+      var rn=roomName(); locationEl.textContent=rn; finishEl.textContent=finishName(rn);
+    }
+    function roomName(){var x=player.x,y=player.y;if(player.floor){if(x<8.5)return y<9?'Primary suite':'Bedroom three';if(x>15.5)return y<9?'Bedroom two':'Bedroom four';return 'Upper gallery'}if(x<8.5)return y<6.5?'Library':y<11.5?'Dining room':'Conservatory';if(x>15.5)return y<6.5?'Salon':y<11.5?'Kitchen':'Family room';return y>12?'Entry vestibule':y<7?'Stair landing':'Two-story foyer'}
+    function finishName(room){if(room==='Kitchen')return 'Pearl tile · full-height cabinetry · chandeliers';if(room==='Two-story foyer'||room==='Entry vestibule')return 'Polished white-veined marble · statement chandelier';if(room==='Stair landing'||room==='Upper gallery')return 'Tall stair window · statement chandelier';if(room.indexOf('suite')>-1||room.indexOf('Bedroom')>-1)return 'Bath chandelier · framed beveled mirrors';return 'Wainscoting · crown · 7¼-inch baseboard';}
+    function ray(angle){
+      var sin=Math.sin(angle),cos=Math.cos(angle),dist=0,hit=false,side=0,hx=0,hy=0;
+      while(!hit&&dist<depth){dist+=.025;hx=player.x+cos*dist;hy=player.y+sin*dist;if(wallAt(hx,hy)){hit=true;var fx=hx-Math.floor(hx),fy=hy-Math.floor(hy);side=Math.min(fx,1-fx)<Math.min(fy,1-fy)?1:0}}
+      return {d:dist,side:side,x:hx,y:hy};
+    }
+    function drawStairObject(zbuf){
+      if(player.floor!==0)return;var ox=11.5,oy=8.8,dx=ox-player.x,dy=oy-player.y,dist=Math.sqrt(dx*dx+dy*dy),ang=Math.atan2(dy,dx)-player.a;while(ang>Math.PI)ang-=Math.PI*2;while(ang<-Math.PI)ang+=Math.PI*2;if(Math.abs(ang)>FOV*.7||dist<1.2)return;
+      var sx=canvas.width/2+(ang/FOV)*canvas.width,scale=canvas.height/(dist*.95),w=Math.min(scale*1.5,canvas.width*.55),h=scale*.95,base=canvas.height/2+h*.42;var col=Math.floor(sx/canvas.width*zbuf.length);if(col>=0&&col<zbuf.length&&zbuf[col]<dist*.9)return;
+      ctx.save();ctx.translate(sx,base);
+      // tall two-story stair window with divided lights
+      ctx.fillStyle='rgba(162,190,196,.58)';ctx.strokeStyle='#e0d7c8';ctx.lineWidth=Math.max(2,w*.01);ctx.fillRect(-w*.115,-h*1.05,w*.23,h*.48);ctx.strokeRect(-w*.115,-h*1.05,w*.23,h*.48);ctx.beginPath();ctx.moveTo(0,-h*1.05);ctx.lineTo(0,-h*.57);ctx.moveTo(-w*.115,-h*.81);ctx.lineTo(w*.115,-h*.81);ctx.stroke();
+      // large chandelier suspended within the two-story volume
+      ctx.strokeStyle='#d9bd83';ctx.lineWidth=Math.max(1,w*.006);ctx.beginPath();ctx.moveTo(0,-h*1.34);ctx.lineTo(0,-h*.98);ctx.stroke();ctx.beginPath();ctx.moveTo(-w*.13,-h*.83);ctx.quadraticCurveTo(0,-h*.97,w*.13,-h*.83);ctx.moveTo(-w*.18,-h*.76);ctx.quadraticCurveTo(0,-h*.91,w*.18,-h*.76);ctx.stroke();for(var l=-2;l<=2;l++){ctx.beginPath();ctx.arc(l*w*.065,-h*(.82+Math.abs(l)*.025),Math.max(2,w*.012),0,Math.PI*2);ctx.fillStyle='#f4dda0';ctx.fill()}
+      ctx.strokeStyle='#d8d1c2';ctx.lineWidth=Math.max(2,w*.012);ctx.fillStyle='rgba(82,73,64,.96)';ctx.beginPath();ctx.moveTo(-w*.48,0);ctx.lineTo(-w*.13,-h*.72);ctx.lineTo(0,-h*.74);ctx.lineTo(0,-h*.54);ctx.lineTo(-w*.05,-h*.54);ctx.lineTo(-w*.34,0);ctx.closePath();ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(w*.48,0);ctx.lineTo(w*.13,-h*.72);ctx.lineTo(0,-h*.74);ctx.lineTo(0,-h*.54);ctx.lineTo(w*.05,-h*.54);ctx.lineTo(w*.34,0);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.strokeStyle='#b69268';ctx.lineWidth=Math.max(1.5,w*.009);for(var i=0;i<6;i++){var t=i/6;ctx.beginPath();ctx.moveTo(-w*(.34-.22*t),-h*.58*t);ctx.lineTo(-w*(.29-.18*t),-h*.58*t);ctx.stroke();ctx.beginPath();ctx.moveTo(w*(.34-.22*t),-h*.58*t);ctx.lineTo(w*(.29-.18*t),-h*.58*t);ctx.stroke()}ctx.beginPath();ctx.moveTo(-w*.5,-h*.05);ctx.lineTo(-w*.14,-h*.78);ctx.lineTo(w*.14,-h*.78);ctx.lineTo(w*.5,-h*.05);ctx.stroke();ctx.restore();
+    }
+    function render(){
+      var w=canvas.width,h=canvas.height;ctx.fillStyle='#20211f';ctx.fillRect(0,0,w,h/2);var marble=player.floor===0&&player.x>8&&player.x<16&&player.y>6.5;var g=ctx.createLinearGradient(0,h/2,0,h);if(marble){g.addColorStop(0,'#c9c8c3');g.addColorStop(1,'#f3f2ee')}else{g.addColorStop(0,'#544d44');g.addColorStop(1,'#1a1a18')}ctx.fillStyle=g;ctx.fillRect(0,h/2,w,h/2);
+      if(marble){ctx.strokeStyle='rgba(50,54,55,.24)';ctx.lineWidth=1;for(var mv=0;mv<7;mv++){var yy=h*.56+mv*mv*h*.012;ctx.beginPath();ctx.moveTo(0,yy);ctx.bezierCurveTo(w*.24,yy-10,w*.63,yy+13,w,yy-4);ctx.stroke()}for(var mt=-4;mt<=4;mt++){ctx.beginPath();ctx.moveTo(w/2,h/2);ctx.lineTo(w/2+mt*w*.20,h);ctx.stroke()}}
+      // coffered ceiling lines
+      ctx.strokeStyle='rgba(220,208,188,.11)';ctx.lineWidth=1;for(var c=1;c<8;c++){ctx.beginPath();ctx.moveTo(w/2,h/2);ctx.lineTo(c*w/8,0);ctx.stroke()}
+      var cols=Math.ceil(w/2),zbuf=[];
+      for(var i=0;i<cols;i++){var a=player.a-FOV/2+(i/cols)*FOV,r=ray(a),correct=r.d*Math.cos(a-player.a),wallH=Math.min(h*1.6,h/(correct*.88)),top=(h-wallH)/2,x=i*2;zbuf.push(correct);var shade=Math.max(.15,1-correct/depth*.8)*(r.side?.78:1);var panel=(Math.floor((r.x+r.y)*5)%2===0);var rr=panel?118:99,gg=panel?108:91,bb=panel?92:80;ctx.fillStyle='rgb('+Math.floor(rr*shade)+','+Math.floor(gg*shade)+','+Math.floor(bb*shade)+')';ctx.fillRect(x,top,2,wallH);
+        // substantial crown, paneled wainscot cap, and tall baseboard
+        ctx.fillStyle='rgba(224,216,199,'+(0.42*shade)+')';ctx.fillRect(x,top,2,Math.max(2,wallH*.035));ctx.fillRect(x,top+wallH*.69,2,Math.max(1,wallH*.018));ctx.fillStyle='rgba(205,198,183,'+(0.5*shade)+')';ctx.fillRect(x,top+wallH*.90,2,Math.max(3,wallH*.10));
+        if(i%10===0&&correct<9){ctx.fillStyle='rgba(226,211,184,'+(0.10*shade)+')';ctx.fillRect(x,top,1,wallH)}}
+      drawStairObject(zbuf);
+      // vignette
+      var vg=ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*.2,w/2,h/2,Math.max(w,h)*.7);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.48)');ctx.fillStyle=vg;ctx.fillRect(0,0,w,h);
+    }
+    function loop(now){var dt=Math.min(.05,(now-last)/1000);last=now;if(walkView.classList.contains('active')){update(dt);render()}requestAnimationFrame(loop)}
+    resizeCanvas();requestAnimationFrame(loop);
+  })();
+  </script>
+</body>
+</html>

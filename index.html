@@ -10,18 +10,22 @@
   body { margin: 0; font-family: Georgia, 'Times New Roman', serif; background: #101014; color: #e8e4da; }
   a { color: #d8b56b; }
   .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 64px; }
-  header { border-bottom: 1px solid #2c2c33; padding-bottom: 28px; margin-bottom: 36px; }
+  header { border-bottom: 1px solid #2c2c33; padding-bottom: 28px; margin-bottom: 8px; }
   .kicker { font-family: 'Courier New', monospace; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #9a958a; margin: 0 0 14px; }
   h1 { font-size: 40px; line-height: 1.15; margin: 0 0 18px; font-weight: normal; }
   .intro-links { display: flex; flex-wrap: wrap; gap: 12px 28px; font-family: 'Courier New', monospace; font-size: 14px; }
   .intro-links a { text-decoration: none; border-bottom: 1px solid #d8b56b; padding-bottom: 2px; }
-  h2 { font-family: 'Courier New', monospace; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #9a958a; margin: 44px 0 6px; font-weight: normal; }
+  h2 { font-family: 'Courier New', monospace; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #9a958a; margin: 48px 0 6px; font-weight: normal; }
   .game { border-top: 1px solid #2c2c33; padding: 20px 0; }
-  .game h3 { margin: 0 0 6px; font-size: 24px; font-weight: normal; }
-  .game p { margin: 0 0 10px; line-height: 1.55; color: #c9c4b8; }
+  .game h3, section h3 { margin: 0 0 6px; font-size: 24px; font-weight: normal; }
+  .game p, section p { margin: 0 0 10px; line-height: 1.55; color: #c9c4b8; }
+  section { border-top: 1px solid #2c2c33; padding: 20px 0 4px; }
   .play { font-family: 'Courier New', monospace; font-size: 14px; text-decoration: none; border: 1px solid #d8b56b; padding: 6px 14px; display: inline-block; }
   .play:hover { background: #d8b56b; color: #101014; }
-  section p { line-height: 1.6; color: #c9c4b8; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1px; background: #2c2c33; border: 1px solid #2c2c33; margin: 16px 0 12px; }
+  .stat { background: #101014; padding: 14px; }
+  .stat b { display: block; font-size: 26px; font-weight: normal; color: #e8e4da; }
+  .stat span { font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: #9a958a; }
   footer { border-top: 1px solid #2c2c33; margin-top: 52px; padding-top: 20px; font-family: 'Courier New', monospace; font-size: 13px; color: #9a958a; }
 </style>
 </head>
@@ -31,12 +35,14 @@
     <p class="kicker">Portfolio</p>
     <h1>Playable worlds, built from scratch.</h1>
     <div class="intro-links">
-      <a href="#games">View the work</a>
-      <a href="https://github.com/jkom329/browser-games" target="_blank" rel="noopener noreferrer">GitHub — game source code</a>
+      <a href="#games">Browser games</a>
+      <a href="#chess">Chess engine</a>
+      <a href="#house">Spencer House</a>
+      <a href="https://github.com/jkom329/browser-games" target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
   </header>
 
-  <h2 id="games">Games — five playable builds</h2>
+  <h2 id="games">01 / Browser Games — five playable builds</h2>
 
   <div class="game">
     <h3>Space Combat</h3>
@@ -58,7 +64,7 @@
 
   <div class="game">
     <h3>Marine Tactics</h3>
-    <p>Simplified StarCraft-like tactics: 10 marines a side, no base-building, pure positioning against the AI. Mouse only: left-click/drag to select, right-click to move or attack.</p>
+    <p>Simplified StarCraft-like tactics: 10 marines a side, no base-building, pure positioning against the AI. Mouse only: left-click/drag to select, right-click to move, A + click to attack-move.</p>
     <a class="play" href="marine-tactics/">Play</a>
   </div>
 
@@ -68,16 +74,24 @@
     <a class="play" href="top-down-racer/">Play</a>
   </div>
 
-  <h2>03 / Chess Engine</h2>
+  <h2 id="chess">02 / Chess Engine</h2>
   <section>
-    <h3 style="font-size:24px;font-weight:normal;margin:0 0 6px;">Furtificus</h3>
-    <p>Furtificus played on the Free Internet Chess Server (FICS) as leaderbeans(C). Its verified record there: Blitz 1637, Lightning 1961.</p>
+    <h3>Furtificus</h3>
+    <p>A chess engine I wrote that played on the Free Internet Chess Server (FICS) as the computer account <b>leaderbeans(C)</b>, running on a 600 MHz Pentium with 161 MB of RAM. Active from 2008 to 2013 — it spent so much time online that by January 2011 it had already logged more than 400 days on the server.</p>
+    <div class="stats">
+      <div class="stat"><b>9,600+</b><span>hours online (400+ days by Jan 2011)</span></div>
+      <div class="stat"><b>94,015</b><span>games in the FICS database</span></div>
+      <div class="stat"><b>1637</b><span>Blitz rating (best 1742)</span></div>
+      <div class="stat"><b>1961</b><span>Lightning rating (best 1980)</span></div>
+    </div>
+    <p>Rated blitz record: 501 wins, 213 losses, 73 draws. Rated lightning record: 164 wins, 102 losses, 18 draws. Of the 94,015 games in the database, 87,338 are blitz. Last build: October 7, 2008; last disconnected October 30, 2013.</p>
   </section>
 
-  <h2>Architecture</h2>
+  <h2 id="house">03 / Architecture</h2>
   <section>
-    <h3 style="font-size:24px;font-weight:normal;margin:0 0 6px;">Spencer House</h3>
-    <p>A walkable 3D dream house built around the split-staircase foyer of Resident Evil's Spencer Mansion. It lives in Muse rather than on this site — ask Muse to open it.</p>
+    <h3>Spencer House</h3>
+    <p>A walkable 3D dream house built around the split-staircase foyer of Resident Evil's Spencer Mansion — ceiling-high kitchen cabinets, mother-of-pearl backsplash tile, chandeliers in the foyer, kitchen and bathrooms, beveled framed mirrors, wainscoting, crown molding, and white marble tile in the foyer.</p>
+    <a class="play" href="spencer-house/">Step inside</a>
   </section>
 
   <footer>
