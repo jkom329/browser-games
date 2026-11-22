@@ -82,7 +82,7 @@
 
     <div class="layout">
       <div class="stage">
-        <canvas id="view" aria-label="3D walkthrough of the basement with the bathroom finished"></canvas>
+        <canvas id="view" tabindex="0" aria-label="3D walkthrough of the basement with the bathroom finished"></canvas>
         <div class="hint">Drag to look · WASD / arrows to walk · Click a part of the model too</div>
         <div class="viewbar">
           <button type="button" data-view="overview">Overview</button>
@@ -329,7 +329,7 @@
     }
     var e2 = new THREE.Mesh(new THREE.SphereGeometry(0.19, 14, 12), ductMat); e2.position.set(16.9, 8.35, -0.8); scene.add(e2); reg('elbows', e2);
     box(0.55, 0.65, 0.65, mat(0x8f948c, 0.5, { metalness: 0.4 }), 17.95, 8.35, -0.8, 'ventcap');
-    label('EXHAUST DUCT — ONE JOIST BAY, OVER THE BEAMS', 4.2, 9.5, -0.8, 9);
+    label('EXHAUST DUCT', 4.2, 9.45, -1.3, 6);
     label('BATHROOM — PHASE 1', -8.75, 8.7, 0, 6);
     // Door (shown open) + beveled transition strip + timer switch
     var door = box(2.45, 6.6, 0.1, mat(0x8a6a48, 0.65), -6.05, 3.3, 4.6, 'door'); door.rotation.y = 0.72;
@@ -412,10 +412,25 @@
       selected = null;
       document.querySelectorAll('.item.sel').forEach(function (el) { el.classList.remove('sel'); });
     }
+    var itemViews = {
+      duct: [-13, 5.6, 4.6, 12, 8.35, -1.3], elbows: [-13, 5.6, 4.6, 12, 8.35, -1.3],
+      collar: [-13, 5.6, 4.6, 12, 8.35, -1.3], tape: [-13, 5.6, 4.6, 12, 8.35, -1.3], caps: [-13, 5.6, 4.6, 12, 8.35, -1.3],
+      ventcap: [10.5, 6.6, 3.8, 17.8, 8.35, -1.3],
+      fan: [-5.2, 4.4, 2.9, -9.8, 6.9, -1.6], timer: [-5.2, 4.4, 2.9, -6, 3.8, 3.4],
+      toilet: [-5.4, 5, 3, -8.8, 3.2, -3.4], vanity: [-5.4, 5, 3, -6.4, 3.6, -3.4],
+      gfci: [-5.4, 5, 3, -5.2, 3.9, -3.4], vanitylight: [-5.4, 5, 3, -5.6, 5.4, -3.4],
+      showertrim: [-6.6, 5, 2.8, -12.8, 3.8, -1.2], drain: [-6.6, 5.4, 2.8, -12, 0.4, -1.2],
+      tray: [-6.6, 5.4, 2.8, -12, 0.4, -1.2], membrane: [-6.6, 5, 2.8, -12.8, 3.8, -1.2],
+      tile: [-4.6, 6.6, 7.2, -11, 0.3, -1], ditra: [-4.6, 6.6, 7.2, -10.5, 0.3, -0.5],
+      plastic: [-4.6, 6.6, 7.2, -10.5, 0.3, -0.5], grout: [-4.6, 6.6, 7.2, -11, 0.3, -1]
+    };
     function selectKey(key, fromList) {
-      if (selected === key) { clearHighlight(); whereBox.innerHTML = '<span class="tag">Where it goes</span><strong>Nothing selected</strong>Pick a material and it will pulse orange in the 3D model.'; return; }
       clearHighlight();
       selected = key;
+      if (fromList && itemViews[key]) {
+        var v = itemViews[key];
+        setView(v[0], v[1], v[2], v[3], v[4], v[5]);
+      }
       var meshes = registry[key] || [];
       meshes.forEach(function (ms) {
         if (ms.material && ms.material.emissive) {
@@ -446,16 +461,16 @@
 
     // ---------- Camera: drag look + WASD walk + presets ----------
     var yaw = 0.55, pitch = -0.16;
-    camera.position.set(15.5, 9.5, 16.5);
+    camera.position.set(15.8, 5.6, 17.8);
     function setView(px, py, pz, tx, ty, tz) {
       camera.position.set(px, py, pz);
       var d = new THREE.Vector3(tx - px, ty - py, tz - pz).normalize();
       pitch = Math.asin(THREE.MathUtils.clamp(d.y, -1, 1));
       yaw = Math.atan2(-d.x, -d.z);
     }
-    setView(15.5, 9.5, 16.5, -5, 1.5, -4);
+    setView(15.8, 5.6, 17.8, -11, 2.2, -7);
     var views = {
-      overview: [15.5, 9.5, 16.5, -5, 1.5, -4],
+      overview: [15.8, 5.6, 17.8, -11, 2.2, -7],
       door: [-5.3, 5.2, 10.5, -6.2, 3.2, 0],
       inside: [-5, 5.1, 2.7, -12.8, 3.1, -1.6],
       duct: [-14.5, 6.6, 3.6, 14, 8.3, -0.8],
@@ -469,6 +484,7 @@
     });
     var dragging = false, lastX = 0, lastY = 0, downX = 0, downY = 0;
     canvas.addEventListener('pointerdown', function (e) {
+      canvas.focus();
       dragging = true; lastX = downX = e.clientX; lastY = downY = e.clientY;
       canvas.setPointerCapture(e.pointerId);
     });
@@ -493,8 +509,14 @@
       }
     });
     var keys = {};
-    window.addEventListener('keydown', function (e) { keys[e.key.toLowerCase()] = true; });
+    var keyUntil = {};
+    window.addEventListener('keydown', function (e) {
+      var k = e.key.toLowerCase();
+      keys[k] = true;
+      keyUntil[k] = performance.now() + 180; // a quick tap still moves a step
+    });
     window.addEventListener('keyup', function (e) { keys[e.key.toLowerCase()] = false; });
+    function keyActive(k) { return keys[k] || performance.now() < (keyUntil[k] || 0); }
 
     function resize() {
       var w = canvas.clientWidth, h = canvas.clientHeight;
@@ -509,13 +531,13 @@
       requestAnimationFrame(animate);
       var dt = Math.min(clock.getDelta(), 0.05);
       var t = clock.elapsedTime;
-      var speed = (keys['shift'] ? 17 : 8.5) * dt;
+      var speed = (keyActive('shift') ? 17 : 8.5) * dt;
       var f = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
       var r = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
-      if (keys['w'] || keys['arrowup']) camera.position.addScaledVector(f, speed);
-      if (keys['s'] || keys['arrowdown']) camera.position.addScaledVector(f, -speed);
-      if (keys['a'] || keys['arrowleft']) camera.position.addScaledVector(r, -speed);
-      if (keys['d'] || keys['arrowright']) camera.position.addScaledVector(r, speed);
+      if (keyActive('w') || keyActive('arrowup')) camera.position.addScaledVector(f, speed);
+      if (keyActive('s') || keyActive('arrowdown')) camera.position.addScaledVector(f, -speed);
+      if (keyActive('a') || keyActive('arrowleft')) camera.position.addScaledVector(r, -speed);
+      if (keyActive('d') || keyActive('arrowright')) camera.position.addScaledVector(r, speed);
       camera.position.x = Math.max(-16.3, Math.min(16.3, camera.position.x));
       camera.position.z = Math.max(-19.3, Math.min(19.3, camera.position.z));
       if (!views._free) camera.position.y = Math.max(2.2, Math.min(10.5, camera.position.y));
@@ -527,7 +549,7 @@
       camera.lookAt(look);
       if (selected) {
         (registry[selected] || []).forEach(function (ms) {
-          if (ms.material && ms.material.emissive) ms.material.emissiveIntensity = 0.55 + 0.35 * Math.sin(t * 4.5);
+          if (ms.material && ms.material.emissive) ms.material.emissiveIntensity = 0.85 + 0.5 * Math.sin(t * 4.5);
         });
       }
       resize();
