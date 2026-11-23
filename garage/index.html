@@ -505,7 +505,7 @@
       smallbins: [-4.2, 4.6, -2.5, -4.4, 2.9, -9.5], labels: [-5.9, 4.8, -1, -6.5, 3, -9.5],
       rack: [-3.5, 3.2, 9.5, 5.5, 7.2, 3], led: [0, 3.5, 6, 0, 8.8, -1],
       bench: [-5.5, 4.6, 4.6, -11.6, 3.4, 4.6], pegboard: [-5.5, 5, 4.6, -11.8, 5.4, 4.6],
-      floorlines: [0, 9.5, 15, 0, 0, -2]
+      floorlines: [0, 8.8, 8.5, 0, 0, -2]
     };
     function selectKey(key, fromList) {
       if (mode !== 'proposed') setMode('proposed');
@@ -545,16 +545,16 @@
 
     // ---------- Camera: drag look + WASD walk + presets ----------
     var yaw = 0.55, pitch = -0.16;
-    camera.position.set(15.8, 7.5, 18.5);
+    camera.position.set(10.6, 8.4, 8.6);
     function setView(px, py, pz, tx, ty, tz) {
       camera.position.set(px, py, pz);
       var d = new THREE.Vector3(tx - px, ty - py, tz - pz).normalize();
       pitch = Math.asin(THREE.MathUtils.clamp(d.y, -1, 1));
       yaw = Math.atan2(-d.x, -d.z);
     }
-    setView(15.8, 7.5, 18.5, -3, 1, -5);
+    setView(10.6, 8.4, 8.6, -6.5, 0.5, -7.5);
     var views = {
-      overview: [15.8, 7.5, 18.5, -3, 1, -5],
+      overview: [10.6, 8.4, 8.6, -6.5, 0.5, -7.5],
       bumpout: [7, 4.2, -3.5, 7, 1, -12.5],
       track: [3.5, 4.6, -1, 11.8, 3.4, -1],
       shelves: [-5.9, 5.2, 0.5, -5.9, 3.2, -9.6],
