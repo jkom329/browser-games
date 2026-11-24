@@ -77,7 +77,7 @@
 <main>
   <section class="command-bar" aria-label="Battle status">
     <div class="force"><span class="count" id="blueCount">10</span><span><small>Vanguard</small><strong>Your squad</strong></span></div>
-    <div class="round"><small>Field status</small><span id="status">Awaiting orders</span></div>
+    <div class="round"><small id="fieldLabel">Field status</small><span id="status">Awaiting orders</span></div>
     <div class="force enemy"><span><small>Hostile force</small><strong>Enemy squad</strong></span><span class="count" id="redCount">10</span></div>
   </section>
 
@@ -111,7 +111,45 @@
   var world={w:1000,h:620}, units=[],bullets=[],particles=[],selected=new Set(), running=false,paused=false,ended=false,last=0,clock=0,dpr=1;
   var pointer={down:false,x:0,y:0,startX:0,startY:0,drag:false,shift:false};
   var commandMode=null,commandPing=null,lastFriendlyClick={id:null,time:0};
-  var covers=[{x:478,y:0,w:44,h:238},{x:478,y:382,w:44,h:238}];
+  var covers=[],terrainName='The Divide';
+  // Terrain: each layout lists cover on the left half / center only; mirrorRects
+  // reflects it across the midline so neither side ever gets an advantage.
+  var LAYOUTS=[
+    {name:'The Divide',rects:[{x:478,y:0,w:44,h:238},{x:478,y:382,w:44,h:238}]},
+    {name:'Crossroads',rects:[{x:478,y:180,w:44,h:260},{x:370,y:288,w:108,h:44}]},
+    {name:'Twin Gates',rects:[{x:430,y:0,w:40,h:200},{x:430,y:420,w:40,h:200},{x:470,y:268,w:60,h:84}]},
+    {name:'Four Posts',rects:[{x:320,y:120,w:64,h:64},{x:320,y:436,w:64,h:64},{x:420,y:278,w:52,h:64}]},
+    {name:'The Flanks',rects:[{x:300,y:96,w:170,h:38},{x:300,y:486,w:170,h:38}]},
+    {name:'Serpentine',rects:[{x:400,y:0,w:40,h:250},{x:300,y:370,w:40,h:250}]},
+    {name:'Courtyard',rects:[{x:400,y:190,w:200,h:36},{x:400,y:394,w:200,h:36},{x:400,y:226,w:36,h:60},{x:400,y:334,w:36,h:60}]},
+    {name:'Pillars',rects:[{x:310,y:150,w:48,h:48},{x:310,y:422,w:48,h:48},{x:420,y:150,w:48,h:48},{x:420,y:422,w:48,h:48}]}
+  ];
+  function mirrorRects(rects){
+    var out=[];
+    rects.forEach(function(r){out.push({x:r.x,y:r.y,w:r.w,h:r.h});var mx=world.w-r.x-r.w;if(mx!==r.x)out.push({x:mx,y:r.y,w:r.w,h:r.h})});
+    return out;
+  }
+  function randomRects(){
+    var rects=[],tries=0,count=3+Math.floor(Math.random()*3);
+    while(rects.length<count&&tries<80){
+      tries++;
+      var horiz=Math.random()<.5;
+      var w=horiz?70+Math.random()*70:36+Math.random()*10;
+      var h=horiz?36+Math.random()*10:70+Math.random()*70;
+      var x=275+Math.random()*Math.max(1,470-w-275);
+      var y=30+Math.random()*Math.max(1,590-h-30);
+      var ok=true;
+      for(var i=0;i<rects.length;i++){var o=rects[i];if(x<o.x+o.w+64&&x+w+64>o.x&&y<o.y+o.h+64&&y+h+64>o.y){ok=false;break}}
+      if(ok)rects.push({x:Math.round(x),y:Math.round(y),w:Math.round(w),h:Math.round(h)});
+    }
+    if(Math.random()<.4){var len=130+Math.random()*100;rects.push({x:478,y:Math.round(Math.random()*(620-len)),w:44,h:Math.round(len)})}
+    return rects;
+  }
+  function pickTerrain(){
+    if(Math.random()<.7){var L=LAYOUTS[Math.floor(Math.random()*LAYOUTS.length)];terrainName=L.name;covers=mirrorRects(L.rects)}
+    else{terrainName='Uncharted field';var r=randomRects();if(r.length>=2)covers=mirrorRects(r);else{terrainName='The Divide';covers=mirrorRects(LAYOUTS[0].rects)}}
+    var fl=document.getElementById('fieldLabel');if(fl)fl.textContent='Field · '+terrainName;
+  }
   var audio=null;
 
   function initAudio(){
@@ -140,6 +178,7 @@
     return {id:team+i,team:team,x:x,y:y,vx:0,vy:0,r:13,hp:100,maxHp:100,speed:team==='blue'?67:61,range:148,reload:Math.random()*.8,target:null,move:null,dead:false,angle:team==='blue'?0:Math.PI,hold:false,flash:0,aiTimer:Math.random()*2,hit:0};
   }
   function reset(){
+    pickTerrain();
     units=[];bullets=[];particles=[];selected.clear();clock=0;ended=false;paused=false;running=true;commandMode=null;commandPing=null;last=performance.now();
     for(var i=0;i<10;i++){units.push(makeUnit('blue',i));units.push(makeUnit('red',i));}
     result.classList.add('hidden');updateHUD();draw();
