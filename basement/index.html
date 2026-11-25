@@ -614,7 +614,7 @@
       btn.addEventListener('click', function () {
         var v = views[btn.dataset.view];
         setView(v[0], v[1], v[2], v[3], v[4], v[5]);
-        if (btn.dataset.view === 'duct') selectKey('duct', false); // highlight the run orange
+        if (btn.dataset.view === 'duct') selectKey('duct', true); // same path as the list click: phase 3 + orange highlight
       });
     });
     var dragging = false, lastX = 0, lastY = 0, downX = 0, downY = 0;
