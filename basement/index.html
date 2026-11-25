@@ -148,7 +148,7 @@
       <div class="note"><h3>Permit timing</h3><p>Framing gets dry-fit first (stood up, unattached) and the fan position is picked then, over the fixture cluster. Permit after dry-fit, before anything is anchored, drilled, or cut. First inspection is the rough-in inspection.</p></div>
     </section>
 
-    <footer>Layout follows sheet C7 of the Veridian Maybeck Cottage foundation plan (1207 Wild Willow Way): 3/4 bath rough-in by the stairs, water heater and softener just northeast of it, sump in the southwest corner, garage unexcavated to the east. Joists run east–west; beams run north–south and hang below the joists; steel posts are 3½ in. The northeast post rides the bathroom wall line and fits inside the 2×4 wall — frame either side of it, never drill into it.</footer>
+    <footer>Layout follows sheet C7 of the Veridian Maybeck Cottage foundation plan (1207 Wild Willow Way): the stairwell is on the west side with two flights running east–west (up to the second floor, down to the basement); the 3/4 bath rough-in sits in the middle of the room just east of the stairs; water heaters and softener stand along the east wall; the furnace is just north of the bathroom; sump in the southwest corner; garage unexcavated to the east. Joists run east–west; beams run north–south and hang below the joists (the west beam stops at the stairwell for headroom); steel posts are 3½ in. One post stands just outside the bathroom's northwest corner and another just east of the northeast corner — frame either side of them, never drill into a post. <a href="plan-2d.html">Simplified 2D plan from C7</a>.</footer>
   </div>
 
   <script type="importmap">
@@ -238,34 +238,51 @@
     for (var jz = -19.9; jz <= 19.4; jz += 1.333) {
       box(34, 0.75, 0.14, joistMat, 0, 8.37, jz);
     }
-    // Beams run north-south, hung BELOW the joists (never cut or notch)
+    // Beams run north-south, hung BELOW the joists (never cut or notch).
+    // Post lines on C7 sit at ~10 ft and ~26.5 ft from the west wall.
+    // The west beam stops at the stairwell (headroom) and resumes south of it.
     var beamMat = mat(0x6e5638, 0.85);
-    box(0.35, 0.9, 40, beamMat, -4, 7.55, 0);
-    box(0.35, 0.9, 40, beamMat, 6, 7.55, 0);
-    // Steel posts 3.5 in dia under the beams
+    box(0.35, 0.9, 17.8, beamMat, -7, 7.55, -11.1);
+    box(0.35, 0.9, 14, beamMat, -7, 7.55, 13);
+    box(0.35, 0.9, 40, beamMat, 9.5, 7.55, 0);
+    // Steel posts 3.5 in dia: C7 positions, not a grid — two on each beam line
+    // plus one just outside the bathroom's NW corner and one just east of its NE corner
     var postMat = mat(0x3c4145, 0.6, { metalness: 0.5 });
-    [-4, 6].forEach(function (bx) {
-      [-12, 0, 12].forEach(function (pz) { cyl(0.146, 0.146, 7.1, postMat, bx, 3.55, pz, null, 14); });
+    [[-6.7, -13.7], [9.3, -13.7], [-7.5, 11.4], [9.9, 11.4], [-0.3, -1.8], [9.9, 0.7]].forEach(function (p) {
+      cyl(0.146, 0.146, 7.1, postMat, p[0], 3.55, p[1], null, 14);
     });
-    // Stairs along the west wall
+    // Stairwell on the west side, two flights running EAST-WEST (C7 + first floor plan):
+    // north flight UP to the 2nd floor, south flight DN to the basement.
+    // In the basement you use the DN flight: step off at the west end, climb east.
     var stairMat = mat(0x7d7f78, 0.95);
+    var shaftWallMat = mat(0x8a8d84, 0.9);
+    box(13.5, 8, 0.35, shaftWallMat, -10.25, 4, -2.2);   // north wall of shaft
+    box(13.5, 8, 0.35, shaftWallMat, -10.25, 4, 2);      // middle wall between flights
+    box(13.5, 8, 0.35, shaftWallMat, -10.25, 4, 6);      // south wall of shaft
     for (var s = 0; s < 10; s++) {
-      box(3.1, 0.35, 1.05, stairMat, -15.2, 0.2 + s * 0.72, 4.6 - s * 1.02);
+      box(1.05, 0.35, 3.2, stairMat, -15.2 + s * 1.02, 0.2 + s * 0.72, 4.2);
     }
-    label('STAIRS', -15.2, 8.6, 0, 4.6);
-    // Mechanicals: water heater, softener, furnace, sump
-    cyl(0.95, 0.95, 4.6, mat(0xb9bcb4, 0.55, { metalness: 0.25 }), -2.3, 2.3, -5.4, 'mech');
-    label('WATER HEATER', -2.3, 5.6, -5.4, 5);
-    cyl(0.62, 0.62, 3.6, mat(0x4d6b8a, 0.5), -0.5, 1.8, -5.8, 'mech');
-    label('SOFTENER', -0.5, 4.4, -5.8, 4.2);
-    box(2.6, 4.4, 2.2, mat(0x8f948c, 0.6, { metalness: 0.3 }), 2.6, 2.2, -8.6, 'mech');
-    label('FURNACE', 2.6, 5.4, -8.6, 4.6);
+    label('STAIRS', -10.5, 8.6, 4.2, 4.6);
+    // Stairwell door, 2 ft 8 in, in the north wall at the east end of the shaft (shown open)
+    var stairDoor = box(2.6, 6.6, 0.1, mat(0x8a6a48, 0.65), -4.6, 3.3, -3.4); stairDoor.rotation.y = 0.8;
+    // Mechanicals: two water heaters + softener along the east wall, furnace just north of the bathroom
+    cyl(0.95, 0.95, 4.6, mat(0xb9bcb4, 0.55, { metalness: 0.25 }), 15.5, 2.3, -0.5, 'mech');
+    label('WATER HEATER', 15.5, 5.6, -0.5, 5);
+    cyl(0.95, 0.95, 4.6, mat(0xb9bcb4, 0.55, { metalness: 0.25 }), 15.5, 2.3, 1.5, 'mech');
+    label('WATER HEATER', 15.5, 5.6, 1.5, 5);
+    cyl(0.62, 0.62, 3.6, mat(0x4d6b8a, 0.5), 15.5, 1.8, 3.5, 'mech');
+    label('SOFTENER', 15.5, 4.4, 3.5, 4.2);
+    box(2.6, 4.4, 2.2, mat(0x8f948c, 0.6, { metalness: 0.3 }), 7.5, 2.2, -4.2, 'mech');
+    label('FURNACE', 7.5, 5.4, -4.2, 4.6);
     var sump = cyl(1.05, 1.05, 0.12, mat(0x2c2f2c, 0.9), -15.3, 0.07, 17.6, 'mech');
     label('SUMP', -15.3, 2.2, 17.6, 3.6);
+    // 200A breaker panel on the west wall, south of the stairs
+    box(0.25, 3, 1.5, mat(0x6a6e68, 0.5, { metalness: 0.4 }), -16.9, 4, 9, 'mech');
+    label('200A PANEL', -15.9, 6.4, 9, 3.6);
     label('FUTURE LIVING AREA', 6, 6.4, 10, 8);
     label('GARAGE ABOVE · UNEXCAVATED', 13.5, 6.4, -12, 7);
 
-    // ---------- The bathroom, finished. x -13.5..-4, z -3.5..3.5, ceiling 7.2 ----------
+    // ---------- The bathroom, finished. x 1..8, z -1..6 (plan 18-25 E, 19-26 S), ceiling 7.2 ----------
     var wallMat = mat(0xe9e7de, 0.92);
     var ceilMat = mat(0xf0eee6, 0.95);
     function bathWall(w, h, d, x, y, z) {
@@ -273,12 +290,12 @@
       reg('drywall', ms);
       return ms;
     }
-    bathWall(0.3, 7.2, 7.3, -13.55, 3.6, 0);              // west
-    bathWall(9.9, 7.2, 0.3, -8.75, 3.6, -3.55);           // north
-    bathWall(0.3, 7.2, 7.3, -3.95, 3.6, 0);               // east (post at -4,0 rides inside this wall)
-    bathWall(6.9, 7.2, 0.3, -10.05, 3.6, 3.55);           // south, west of the door
-    bathWall(2.5, 0.5, 0.3, -5.35, 6.95, 3.55);           // header over the door
-    box(9.9, 0.18, 7.4, ceilMat, -8.75, 7.29, 0, 'drywall'); // bathroom ceiling
+    bathWall(0.3, 7.2, 7.3, 0.95, 3.6, 2.5);              // west
+    bathWall(7.3, 7.2, 0.3, 4.5, 3.6, -1.05);             // north
+    bathWall(0.3, 7.2, 7.3, 8.05, 3.6, 2.5);              // east
+    bathWall(4.5, 7.2, 0.3, 3.25, 3.6, 6.05);             // south, west of the door
+    bathWall(2.5, 0.5, 0.3, 6.75, 6.95, 6.05);            // header over the door
+    box(7.3, 0.18, 7.4, ceilMat, 4.5, 7.29, 2.5, 'drywall'); // bathroom ceiling
     // Stud framing: shown in the framing and rough-in phases, then covered by drywall
     var frameMat = mat(0xa8845c, 0.85);
     function frameWall(len, cx, cz, alongZ) {
@@ -294,84 +311,84 @@
         for (var j = 0; j <= n2; j++) box(0.13, 6.95, 0.29, frameMat, cx - len / 2 + (len * j) / n2, 3.6, cz, 'studs');
       }
     }
-    frameWall(7.3, -13.55, 0, true);        // west
-    frameWall(9.9, -8.75, -3.55, false);    // north
-    frameWall(7.3, -3.95, 0, true);         // east (post at -4,0 rides inside this wall)
-    frameWall(6.8, -10.1, 3.55, false);     // south, west of the door
-    box(2.5, 0.5, 0.29, frameMat, -5.35, 6.95, 3.55, 'studs'); // header over the door
-    frameWall(3.3, -11.9, 1.55, false);     // shower return
+    frameWall(7.3, 0.95, 2.5, true);        // west
+    frameWall(7.3, 4.5, -1.05, false);      // north
+    frameWall(7.3, 8.05, 2.5, true);        // east
+    frameWall(4.4, 3.3, 6.05, false);       // south, west of the door
+    box(2.5, 0.5, 0.29, frameMat, 6.75, 6.95, 6.05, 'studs'); // header over the door
+    frameWall(3.2, 2.6, 2.2, false);        // shower return (south side of shower)
     // Baseboards
     var trimMat = mat(0xf4f2ea, 0.8);
-    box(9.3, 0.45, 0.07, trimMat, -8.75, 0.32, -3.36, 'trim');
-    box(0.07, 0.45, 6.8, trimMat, -13.36, 0.32, 0, 'trim');
-    box(0.07, 0.45, 6.8, trimMat, -4.14, 0.32, 0, 'trim');
-    box(6.6, 0.45, 0.07, trimMat, -10.05, 0.32, 3.36, 'trim');
+    box(6.7, 0.45, 0.07, trimMat, 4.5, 0.32, -0.86, 'trim');
+    box(0.07, 0.45, 6.8, trimMat, 1.14, 0.32, 2.5, 'trim');
+    box(0.07, 0.45, 6.8, trimMat, 7.86, 0.32, 2.5, 'trim');
+    box(4.2, 0.45, 0.07, trimMat, 3.25, 0.32, 5.86, 'trim');
     // Tile floor over Ditra (about 5/8 in over the slab)
     var floorTex = tileTexture('#ccd4cf', '#97a099', 6); floorTex.repeat.set(3, 2);
-    var bathFloor = new THREE.Mesh(new THREE.BoxGeometry(9.5, 0.1, 7), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.5 }));
-    bathFloor.position.set(-8.75, 0.05, 0); scene.add(bathFloor);
+    var bathFloor = new THREE.Mesh(new THREE.BoxGeometry(6.8, 0.1, 6.8), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.5 }));
+    bathFloor.position.set(4.5, 0.05, 2.5); scene.add(bathFloor);
     reg('ditra', bathFloor); reg('tile', bathFloor); reg('plastic', bathFloor);
     // Chalk layout lines on the slab, just outside the wall faces
     var chalkMat = mat(0xd8622a, 0.7, { emissive: 0x431c05 });
-    box(9.9, 0.03, 0.09, chalkMat, -8.75, 0.03, 3.85, 'chalk');
-    box(9.9, 0.03, 0.09, chalkMat, -8.75, 0.03, -3.85, 'chalk');
-    box(0.09, 0.03, 7.3, chalkMat, -13.85, 0.03, 0, 'chalk');
-    box(0.09, 0.03, 7.3, chalkMat, -3.65, 0.03, 0, 'chalk');
-    // Shower: west end, 3.2 x 5 ft, tiled
+    box(7.3, 0.03, 0.09, chalkMat, 4.5, 0.03, 6.3, 'chalk');
+    box(7.3, 0.03, 0.09, chalkMat, 4.5, 0.03, -1.3, 'chalk');
+    box(0.09, 0.03, 7.3, chalkMat, 0.7, 0.03, 2.5, 'chalk');
+    box(0.09, 0.03, 7.3, chalkMat, 8.3, 0.03, 2.5, 'chalk');
+    // Shower: west end, 3.2 x 3.2 ft, tiled
     var shTex = tileTexture('#aebfb8', '#7e8f88', 5); shTex.repeat.set(2, 3);
     var shMat = new THREE.MeshStandardMaterial({ map: shTex, roughness: 0.42 });
     var shFloorTex = tileTexture('#93a89e', '#6d7f76', 5);
-    var shFloor = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.15, 5), new THREE.MeshStandardMaterial({ map: shFloorTex, roughness: 0.5 }));
-    shFloor.position.set(-11.9, 0.075, -1); scene.add(shFloor);
+    var shFloor = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.15, 3.2), new THREE.MeshStandardMaterial({ map: shFloorTex, roughness: 0.5 }));
+    shFloor.position.set(2.6, 0.075, 0.6); scene.add(shFloor);
     reg('tray', shFloor); reg('tile', shFloor);
-    box(0.28, 0.5, 5, shMat, -10.32, 0.25, -1, 'tile');                       // curb
-    var shW1 = box(0.07, 7.2, 5, shMat, -13.36, 3.6, -1); reg('membrane', shW1); reg('tile', shW1);
-    var shW2 = box(3.2, 7.2, 0.07, shMat, -11.9, 3.6, -3.36); reg('membrane', shW2); reg('tile', shW2);
-    bathWall(3.3, 7.2, 0.28, -11.9, 3.6, 1.55);                               // shower return wall
-    var shW3 = box(3.2, 7.2, 0.07, shMat, -11.9, 3.6, 1.38); reg('membrane', shW3); reg('tile', shW3);
-    var glass = box(0.05, 5.6, 3.2, mat(0xcfe0e2, 0.12, { transparent: true, opacity: 0.32 }), -10.3, 3.2, -0.4);
-    // Shower head, valve, drain
+    box(0.28, 0.5, 3.2, shMat, 4.06, 0.25, 0.6, 'tile');                       // curb (east side)
+    var shW1 = box(0.07, 7.2, 3.2, shMat, 1.14, 3.6, 0.6); reg('membrane', shW1); reg('tile', shW1);
+    var shW2 = box(3.2, 7.2, 0.07, shMat, 2.6, 3.6, -0.86); reg('membrane', shW2); reg('tile', shW2);
+    bathWall(3.3, 7.2, 0.28, 2.6, 3.6, 2.2);                                  // shower return wall
+    var shW3 = box(3.2, 7.2, 0.07, shMat, 2.6, 3.6, 2.06); reg('membrane', shW3); reg('tile', shW3);
+    var glass = box(0.05, 5.6, 1.6, mat(0xcfe0e2, 0.12, { transparent: true, opacity: 0.32 }), 4.2, 3.2, -0.2);
+    // Shower head, valve, drain (shower on the west wall)
     var chrome = mat(0xd7dbd8, 0.25, { metalness: 0.85 });
-    box(0.55, 0.07, 0.07, chrome, -13.15, 6.5, -1, 'showertrim');
-    cyl(0.2, 0.24, 0.16, chrome, -12.9, 6.42, -1, 'showertrim');
-    var valve = cyl(0.17, 0.17, 0.12, chrome, -13.3, 3.7, -1, 'showertrim'); valve.rotation.z = Math.PI / 2;
-    cyl(0.3, 0.3, 0.06, mat(0x555a55, 0.4, { metalness: 0.7 }), -11.9, 0.17, -1, 'drain');
-    // Toilet on the north wall
+    box(0.55, 0.07, 0.07, chrome, 1.35, 6.5, 0.6, 'showertrim');
+    cyl(0.2, 0.24, 0.16, chrome, 1.6, 6.42, 0.6, 'showertrim');
+    var valve = cyl(0.17, 0.17, 0.12, chrome, 1.2, 3.7, 0.6, 'showertrim'); valve.rotation.z = Math.PI / 2;
+    cyl(0.3, 0.3, 0.06, mat(0x555a55, 0.4, { metalness: 0.7 }), 2.6, 0.17, 0.6, 'drain');
+    // Toilet on the south wall (as drawn on C7)
     var porc = mat(0xf5f6f2, 0.32);
-    box(1.7, 1.35, 0.55, porc, -8.6, 2.75, -3.2, 'toilet');
-    box(1.55, 0.2, 2, porc, -8.6, 1.5, -2.45, 'toilet');
-    cyl(0.42, 0.55, 1.4, porc, -8.6, 0.75, -2.4, 'toilet');
-    // Vanity on the north wall
+    box(1.7, 1.35, 0.55, porc, 5.5, 2.75, 5.7, 'toilet');
+    box(1.55, 0.2, 2, porc, 5.5, 1.5, 4.95, 'toilet');
+    cyl(0.42, 0.55, 1.4, porc, 5.5, 0.75, 4.9, 'toilet');
+    // Vanity on the south wall (as drawn on C7)
     var cabMat = mat(0x6d5138, 0.7);
-    box(2, 2.8, 1.7, cabMat, -5.3, 1.45, -2.6, 'vanity');
-    box(2.15, 0.13, 1.85, mat(0xe3e1d8, 0.35), -5.3, 2.92, -2.6, 'vanity');
-    cyl(0.58, 0.44, 0.3, porc, -5.3, 3, -2.55, 'vanity');
-    cyl(0.07, 0.07, 0.5, chrome, -5.3, 3.25, -3.2, 'vanity');
-    box(0.07, 0.07, 0.5, chrome, -5.3, 3.5, -3.05, 'vanity');
-    box(1.7, 2.4, 0.06, mat(0xdfe9ec, 0.08, { metalness: 0.9 }), -5.3, 4.7, -3.36, 'vanity');
-    var vlight = box(1.9, 0.3, 0.2, mat(0xfff1cf, 0.4, { emissive: 0x665522 }), -5.3, 6.3, -3.3, 'vanitylight');
-    box(0.32, 0.48, 0.06, mat(0xf5f6f2, 0.5), -4.32, 3.9, -3.36, 'gfci');
+    box(2, 2.8, 1.7, cabMat, 2.5, 1.45, 4.9, 'vanity');
+    box(2.15, 0.13, 1.85, mat(0xe3e1d8, 0.35), 2.5, 2.92, 4.9, 'vanity');
+    cyl(0.58, 0.44, 0.3, porc, 2.5, 3, 4.95, 'vanity');
+    cyl(0.07, 0.07, 0.5, chrome, 2.5, 3.25, 5.6, 'vanity');
+    box(0.07, 0.07, 0.5, chrome, 2.5, 3.5, 5.45, 'vanity');
+    box(1.7, 2.4, 0.06, mat(0xdfe9ec, 0.08, { metalness: 0.9 }), 2.5, 4.7, 5.86, 'vanity');
+    var vlight = box(1.9, 0.3, 0.2, mat(0xfff1cf, 0.4, { emissive: 0x665522 }), 2.5, 6.3, 5.8, 'vanitylight');
+    box(0.32, 0.48, 0.06, mat(0xf5f6f2, 0.5), 3.9, 3.9, 5.86, 'gfci');
     // Fan over the fixture cluster + housing above the ceiling
-    var fanGrille = box(1.15, 0.09, 1.15, mat(0xf5f6f2, 0.5), -8.5, 7.17, -0.8, 'fan');
-    var fanHousing = cyl(0.55, 0.55, 0.75, mat(0x9ba09a, 0.45, { metalness: 0.5 }), -8.5, 7.65, -0.8, 'fan');
-    // Duct: rise, then one joist bay straight across, over both beams, out the east rim joist
+    var fanGrille = box(1.15, 0.09, 1.15, mat(0xf5f6f2, 0.5), 4, 7.17, 3.5, 'fan');
+    var fanHousing = cyl(0.55, 0.55, 0.75, mat(0x9ba09a, 0.45, { metalness: 0.5 }), 4, 7.65, 3.5, 'fan');
+    // Duct: rise, then one joist bay straight east, over both beams, out the east rim joist (~13 ft)
     var ductMat = mat(0xb7bbb4, 0.35, { metalness: 0.6 });
-    var collar = cyl(0.19, 0.19, 0.35, ductMat, -8.5, 7.95, -0.8, 'collar');
-    var rise = cyl(0.167, 0.167, 0.75, ductMat, -8.5, 8.15, -0.8, 'duct'); reg('caps', rise);
-    var e1 = new THREE.Mesh(new THREE.SphereGeometry(0.19, 14, 12), ductMat); e1.position.set(-8.5, 8.35, -0.8); scene.add(e1); reg('elbows', e1);
-    var run = cyl(0.167, 0.167, 25.4, ductMat, 4.2, 8.35, -0.8, 'duct'); run.rotation.z = Math.PI / 2; reg('caps', run);
-    for (var st = 0; st < 7; st++) {
-      box(0.1, 0.55, 0.45, mat(0x7c8078, 0.5, { metalness: 0.4 }), -6 + st * 3.6, 8.35, -0.8, 'tape');
+    var collar = cyl(0.19, 0.19, 0.35, ductMat, 4, 7.95, 3.5, 'collar');
+    var rise = cyl(0.167, 0.167, 0.75, ductMat, 4, 8.15, 3.5, 'duct'); reg('caps', rise);
+    var e1 = new THREE.Mesh(new THREE.SphereGeometry(0.19, 14, 12), ductMat); e1.position.set(4, 8.35, 3.5); scene.add(e1); reg('elbows', e1);
+    var run = cyl(0.167, 0.167, 12.9, ductMat, 10.45, 8.35, 3.5, 'duct'); run.rotation.z = Math.PI / 2; reg('caps', run);
+    for (var st = 0; st < 3; st++) {
+      box(0.1, 0.55, 0.45, mat(0x7c8078, 0.5, { metalness: 0.4 }), 6.5 + st * 3.6, 8.35, 3.5, 'tape');
     }
-    var e2 = new THREE.Mesh(new THREE.SphereGeometry(0.19, 14, 12), ductMat); e2.position.set(16.9, 8.35, -0.8); scene.add(e2); reg('elbows', e2);
-    box(0.55, 0.65, 0.65, mat(0x8f948c, 0.5, { metalness: 0.4 }), 17.95, 8.35, -0.8, 'ventcap');
-    var ductLabel = label('EXHAUST DUCT', 4.2, 9.45, -0.8, 6);
-    label('BATHROOM — PHASE 1', -8.75, 8.7, 0, 6);
+    var e2 = new THREE.Mesh(new THREE.SphereGeometry(0.19, 14, 12), ductMat); e2.position.set(16.9, 8.35, 3.5); scene.add(e2); reg('elbows', e2);
+    box(0.55, 0.65, 0.65, mat(0x8f948c, 0.5, { metalness: 0.4 }), 17.95, 8.35, 3.5, 'ventcap');
+    var ductLabel = label('EXHAUST DUCT', 10.5, 9.45, 3.5, 6);
+    label('BATHROOM — PHASE 1', 4.5, 8.7, 2.5, 6);
     // Door (shown open) + beveled transition strip + timer switch
-    var door = box(2.45, 6.6, 0.1, mat(0x8a6a48, 0.65), -6.05, 3.3, 4.6, 'door'); door.rotation.y = 0.72;
-    var knob = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 10), chrome); knob.position.set(-5.1, 3.3, 5.35); scene.add(knob); reg('door', knob);
-    box(2.5, 0.07, 0.55, mat(0xb08d4f, 0.4, { metalness: 0.6 }), -5.35, 0.05, 3.55, 'transition');
-    box(0.3, 0.48, 0.06, mat(0xf5f6f2, 0.5), -4.5, 4, 3.36, 'timer');
+    var door = box(2.45, 6.6, 0.1, mat(0x8a6a48, 0.65), 6.2, 3.3, 5, 'door'); door.rotation.y = 0.72;
+    var knob = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 10), chrome); knob.position.set(7.15, 3.3, 4.35); scene.add(knob); reg('door', knob);
+    box(2.5, 0.07, 0.55, mat(0xb08d4f, 0.4, { metalness: 0.6 }), 6.75, 0.05, 6, 'transition');
+    box(0.3, 0.48, 0.06, mat(0xf5f6f2, 0.5), 5.2, 4, 5.86, 'timer');
 
     // ---------- Materials list ----------
     var MATERIALS = [
@@ -392,22 +409,22 @@
       { key: 'tile', name: 'Tile — shower + floor', qty: 'measure at dry-fit', where: 'Shower walls and floor, the curb, and the bathroom floor.' },
       { key: 'grout', name: 'Grout + color-matched silicone', qty: '1 bag + 2 tubes', where: 'Everywhere the tile is — joints, the curb, and the change-of-plane corners in silicone.' },
       { g: 'Fixtures' },
-      { key: 'toilet', name: 'Toilet + wax ring + supply line', qty: '1', where: 'North wall, on the rough-in. Flange set to the bathroom\u2019s own finished floor height, not the future basement floor.' },
-      { key: 'vanity', name: 'Vanity + top + faucet + trap kit', qty: '1', where: 'North wall next to the toilet — cabinet, sink, faucet, and the mirror above it.' },
+      { key: 'toilet', name: 'Toilet + wax ring + supply line', qty: '1', where: 'South wall, on the rough-in. Flange set to the bathroom\u2019s own finished floor height, not the future basement floor.' },
+      { key: 'vanity', name: 'Vanity + top + faucet + trap kit', qty: '1', where: 'South wall next to the toilet — cabinet, sink, faucet, and the mirror above it.' },
       { key: 'showertrim', name: 'Shower valve trim + shower head', qty: '1 set', where: 'West wall of the shower — head up high, valve at hand height.' },
       { key: 'drain', name: 'Shower drain assembly', qty: '1', where: 'Center of the shower floor, tied into the rough-in below the slab.' },
       { g: 'Exhaust (settled buy list)' },
       { key: 'fan', name: 'Exhaust fan, \u224880 CFM, audible type', qty: '1 — at permit stage', where: 'Bathroom ceiling, over the fixture cluster — final spot picked at the dry-fit. Doubles as whole-basement air dilution on its timer.' },
-      { key: 'duct', name: 'Rigid duct, 4 in \u00d7 5 ft sections', qty: '\u00d76 — settled', where: 'One joist bay, straight across the basement in the ceiling, passing over both beams, to the rim joist. No dips, no 45s.' },
+      { key: 'duct', name: 'Rigid duct, 4 in \u00d7 5 ft sections', qty: '\u00d73 — settled', where: 'From the fan over the fixture cluster, one joist bay straight east \u224813 ft to the rim joist, passing over both beams. No dips, no 45s.' },
       { key: 'elbows', name: '90\u00b0 elbows, 4 in', qty: '\u00d72 — settled', where: 'One at the fan where the run turns horizontal, one at the wall where it exits.' },
       { key: 'collar', name: 'Start collar, 4 in', qty: '\u00d71 — settled', where: 'On top of the fan housing, where the duct run begins.' },
-      { key: 'tape', name: 'Foil tape + straps/hangers', qty: '1 roll + \u22487 straps', where: 'Every duct joint gets foil tape; straps hang the run from the joists about every 4 feet.' },
+      { key: 'tape', name: 'Foil tape + straps/hangers', qty: '1 roll + \u22484 straps', where: 'Every duct joint gets foil tape; straps hang the run from the joists about every 4 feet.' },
       { key: 'caps', name: 'Temporary end caps, 4 in', qty: '\u00d72 — settled', where: 'Cap the open duct ends during the build so the run stays clean until the fan and vent cap go on.' },
       { key: 'ventcap', name: 'Exterior vent cap with damper', qty: '1 — at permit stage', where: 'Outside the rim joist where the duct exits. The damper keeps outside air (and critters) out.' },
       { key: 'timer', name: 'Timer switch for the fan', qty: '1', where: 'On the wall just inside the bathroom door — runs the fan long enough to clear moisture and basement air.' },
       { g: 'Electrical' },
       { key: 'gfci', name: 'GFCI outlet', qty: '1', where: 'On the wall beside the vanity mirror. Bathroom electrical rides on the building permit.' },
-      { key: 'vanitylight', name: 'Vanity light fixture', qty: '1', where: 'Above the mirror on the north wall.' },
+      { key: 'vanitylight', name: 'Vanity light fixture', qty: '1', where: 'Above the mirror on the south wall.' },
       { g: 'Door & trim' },
       { key: 'door', name: 'Prehung door, 30 in', qty: '1', where: 'South wall of the bathroom. Shown open in the model.' },
       { key: 'transition', name: 'Beveled transition strip', qty: '1', where: 'At the bathroom threshold — the bathroom floor sits intentionally lower than the future basement floor, as water containment.' },
@@ -422,7 +439,7 @@
     // ---------- Build phases: step the bathroom from bare slab to finished ----------
     var PHASES = [
       { short: 'Now', name: 'As it is now', blurb: 'Bare slab and joists. The plumbing rough-in is under the concrete and chalk lines mark the bathroom layout. Moisture test, level check and drain check come first.' },
-      { short: 'Framing', name: 'Framing', blurb: 'The bathroom walls in 2x4 — dry-fit unattached first, the fan position picked with the walls up, then the permit, then anchored. All interior walls, no foam. The northeast post rides inside the east wall.' },
+      { short: 'Framing', name: 'Framing', blurb: 'The bathroom walls in 2x4 — dry-fit unattached first, the fan position picked with the walls up, then the permit, then anchored. All interior walls, no foam. One steel post stands just outside the bathroom\u2019s northwest corner and another just east of the northeast corner — frame the walls around them, never drill into a post.' },
       { short: 'Rough-ins', name: 'Rough-ins', blurb: 'Fan housing and the 4-inch duct in one joist bay, straight across over both beams to the rim joist, plus plumbing and electrical. Then the rough-in inspection — the first inspection.' },
       { short: 'Drywall', name: 'Drywall & paint', blurb: 'Walls and ceiling closed up once the rough-in passes, then primer and bathroom paint.' },
       { short: 'Tile', name: 'Shower & tile', blurb: 'Shower tray in, waterproof membrane on the shower walls, tile on the shower and curb, and the floor tile over Ditra — about 5/8 in over the slab.' },
@@ -525,16 +542,16 @@
       document.querySelectorAll('.item.sel').forEach(function (el) { el.classList.remove('sel'); });
     }
     var itemViews = {
-      duct: [0, 6.2, 2.4, 11, 8.4, -0.8], elbows: [0, 6.2, 2.4, 11, 8.4, -0.8],
-      collar: [-5.2, 4.4, 2.9, -9.8, 6.9, -1.6], tape: [0, 6.2, 2.4, 11, 8.4, -0.8], caps: [0, 6.2, 2.4, 11, 8.4, -0.8],
-      ventcap: [24.5, 7.6, 3.6, 17.9, 8.35, -0.8],
-      fan: [-5.2, 4.4, 2.9, -9.8, 6.9, -1.6], timer: [-5.2, 4.4, 2.9, -6, 3.8, 3.4],
-      toilet: [-5.4, 5, 3, -8.8, 3.2, -3.4], vanity: [-5.4, 5, 3, -6.4, 3.6, -3.4],
-      gfci: [-5.4, 5, 3, -5.2, 3.9, -3.4], vanitylight: [-5.4, 5, 3, -5.6, 5.4, -3.4],
-      showertrim: [-6.6, 5, 2.8, -12.8, 3.8, -1.2], drain: [-6.6, 5.4, 2.8, -12, 0.4, -1.2],
-      tray: [-6.6, 5.4, 2.8, -12, 0.4, -1.2], membrane: [-6.6, 5, 2.8, -12.8, 3.8, -1.2],
-      tile: [-4.6, 6.6, 7.2, -11, 0.3, -1], ditra: [-4.6, 6.6, 7.2, -10.5, 0.3, -0.5],
-      plastic: [-4.6, 6.6, 7.2, -10.5, 0.3, -0.5], grout: [-4.6, 6.6, 7.2, -11, 0.3, -1]
+      duct: [4, 6.2, 8, 12, 8.4, 3.5], elbows: [4, 6.2, 8, 12, 8.4, 3.5],
+      collar: [1, 5.2, 7.5, 4, 7.6, 3.5], tape: [4, 6.2, 8, 12, 8.4, 3.5], caps: [4, 6.2, 8, 12, 8.4, 3.5],
+      ventcap: [12, 7, 7, 17.9, 8.35, 3.5],
+      fan: [1, 5.2, 7.5, 4, 7.6, 3.5], timer: [3, 5, 2, 5.2, 4, 5.86],
+      toilet: [2.5, 5, 1.5, 5.5, 1.8, 5], vanity: [6, 5, 1.5, 2.5, 2.5, 5],
+      gfci: [3, 5, 2, 3.9, 3.9, 5.86], vanitylight: [3, 5, 2, 2.5, 6, 5.8],
+      showertrim: [6, 5, 3, 1.5, 5, 0.6], drain: [6, 5.4, 3.5, 2.6, 0.3, 0.6],
+      tray: [6, 5.4, 3.5, 2.6, 0.3, 0.6], membrane: [6, 5, 3, 2.6, 3.5, 0.6],
+      tile: [4.5, 7.5, 8, 4.5, 0.3, 2.5], ditra: [4.5, 7.5, 8, 4.5, 0.3, 2.5],
+      plastic: [4.5, 7.5, 8, 4.5, 0.3, 2.5], grout: [4.5, 7.5, 8, 4.5, 0.3, 2.5]
     };
     function selectKey(key, fromList) {
       var ip = itemPhase[key];
@@ -586,10 +603,10 @@
     setView(15.8, 5.6, 17.8, -11, 2.2, -7);
     var views = {
       overview: [15.8, 5.6, 17.8, -11, 2.2, -7],
-      door: [-5.3, 5.2, 10.5, -6.2, 3.2, 0],
-      inside: [-5, 5.1, 2.7, -12.8, 3.1, -1.6],
-      duct: [0, 6.2, 2.4, 11, 8.4, -0.8],
-      mech: [4.5, 5.4, 3.5, -1.8, 2.4, -6.8]
+      door: [4.5, 5.2, 12, 4.5, 3, 2.5],
+      inside: [7, 5.1, 5, 2, 3, -0.5],
+      duct: [4, 6.2, 8, 12, 8.4, 3.5],
+      mech: [6, 5.4, 3.5, 15.5, 2.4, 1.5]
     };
     document.querySelectorAll('[data-view]').forEach(function (btn) {
       btn.addEventListener('click', function () {

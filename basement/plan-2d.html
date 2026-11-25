@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Basement — 2D floor plan from sheet C7</title>
+<style>
+  body { margin: 0; background: #eef0ea; color: #1c211c; font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  main { max-width: 1060px; margin: 0 auto; padding: 18px 16px 40px; }
+  h1 { font-size: 20px; margin: 4px 0 2px; }
+  p.sub { margin: 0 0 14px; font-size: 13px; color: #4c554c; }
+  .sheet { background: #fff; border: 1px solid #c9cdc2; padding: 10px; }
+  svg { display: block; width: 100%; height: auto; }
+  .notes { margin-top: 16px; font-size: 13px; line-height: 1.55; }
+  .notes h2 { font-size: 14px; margin: 14px 0 4px; }
+  .notes ul { margin: 4px 0; padding-left: 20px; }
+  .notes li { margin: 3px 0; }
+  .warn { background: #fdf3e3; border: 1px solid #e0b96a; padding: 10px 12px; margin-top: 14px; font-size: 13px; line-height: 1.55; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Basement — simplified 2D plan</h1>
+  <p class="sub">Drawn from sheet C7 (foundation plan, Veridian Maybeck Cottage, 1207 Wild Willow Way). North is up. 1 grid square = 2 ft. Dimensions in feet, measured from the northwest outer corner of the basement.</p>
+  <div class="sheet">
+  <svg viewBox="0 0 1020 920" role="img" aria-label="Simplified 2D top view of the basement from sheet C7">
+    <defs>
+      <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+        <path d="M32 0H0V32" fill="none" stroke="#e3e6de" stroke-width="1"/>
+      </pattern>
+      <pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <line x1="0" y1="0" x2="0" y2="10" stroke="#c9cdc2" stroke-width="3"/>
+      </pattern>
+      <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0 0L6 3L0 6Z" fill="#1c211c"/>
+      </marker>
+    </defs>
+
+    <!-- ======= foundation outline ======= -->
+    <!-- unexcavated strip south of basement + garage (hatched) -->
+    <rect x="70" y="760" width="544" height="133" fill="url(#hatch)" />
+    <rect x="614" y="120" width="384" height="773" fill="url(#hatch)" />
+    <!-- basement interior grid -->
+    <rect x="70" y="120" width="544" height="640" fill="url(#grid)" />
+    <!-- basement shell -->
+    <rect x="70" y="120" width="544" height="640" fill="none" stroke="#1c211c" stroke-width="5"/>
+    <!-- garage + south strip outline -->
+    <path d="M614 120 H998 V893 H70 V760" fill="none" stroke="#1c211c" stroke-width="5"/>
+    <line x1="614" y1="120" x2="614" y2="760" stroke="#1c211c" stroke-width="5"/>
+    <!-- front bump-out (bay), north wall: overall 14 ft wide, face ~8 ft, projects 4 ft 3 in -->
+    <path d="M353 120 L401 52 H529 L577 120" fill="none" stroke="#1c211c" stroke-width="5"/>
+    <!-- slider window on garage north wall -->
+    <line x1="758" y1="120" x2="830" y2="120" stroke="#1c211c" stroke-width="9"/>
+    <text x="794" y="108" font-size="13" text-anchor="middle">SLIDER 54×42</text>
+
+    <!-- ======= beams (N-S, dashed) + posts ======= -->
+    <line x1="230" y1="120" x2="230" y2="760" stroke="#1c211c" stroke-width="2" stroke-dasharray="12 7"/>
+    <line x1="494" y1="120" x2="494" y2="760" stroke="#1c211c" stroke-width="2" stroke-dasharray="12 7"/>
+    <g font-size="12" text-anchor="middle">
+      <circle cx="235" cy="221" r="8" fill="#fff" stroke="#1c211c" stroke-width="2"/><text x="235" y="225">K</text>
+      <circle cx="491" cy="221" r="8" fill="#fff" stroke="#1c211c" stroke-width="2"/><text x="491" y="225">K</text>
+      <circle cx="222" cy="622" r="8" fill="#fff" stroke="#1c211c" stroke-width="2"/><text x="222" y="626">K</text>
+      <circle cx="500" cy="622" r="8" fill="#fff" stroke="#1c211c" stroke-width="2"/><text x="500" y="626">K</text>
+      <circle cx="337" cy="411" r="8" fill="#fff" stroke="#1c211c" stroke-width="2"/><text x="337" y="415">K</text>
+      <circle cx="500" cy="451" r="8" fill="#fff" stroke="#1c211c" stroke-width="2"/><text x="500" y="455">K</text>
+    </g>
+    <text x="230" y="780" font-size="12" text-anchor="middle">beam ≈ x 10 ft</text>
+    <text x="494" y="780" font-size="12" text-anchor="middle">beam ≈ x 26.5 ft</text>
+
+    <!-- ======= stairwell: west side, two flights running EAST-WEST ======= -->
+    <rect x="70" y="405" width="216" height="131" fill="#f4f1e8" stroke="#1c211c" stroke-width="3"/>
+    <!-- middle wall between flights -->
+    <line x1="70" y1="472" x2="286" y2="472" stroke="#8a8d84" stroke-width="10"/>
+    <!-- UP flight (north half): treads -->
+    <g stroke="#1c211c" stroke-width="1.5">
+      <line x1="107" y1="410" x2="107" y2="467"/><line x1="123" y1="410" x2="123" y2="467"/>
+      <line x1="139" y1="410" x2="139" y2="467"/><line x1="155" y1="410" x2="155" y2="467"/>
+      <line x1="171" y1="410" x2="171" y2="467"/><line x1="187" y1="410" x2="187" y2="467"/>
+      <line x1="203" y1="410" x2="203" y2="467"/><line x1="219" y1="410" x2="219" y2="467"/>
+      <line x1="235" y1="410" x2="235" y2="467"/><line x1="251" y1="410" x2="251" y2="467"/>
+    </g>
+    <!-- DN flight (south half): treads, dashed = below first floor -->
+    <g stroke="#1c211c" stroke-width="1.5" stroke-dasharray="5 3">
+      <line x1="107" y1="477" x2="107" y2="531"/><line x1="123" y1="477" x2="123" y2="531"/>
+      <line x1="139" y1="477" x2="139" y2="531"/><line x1="155" y1="477" x2="155" y2="531"/>
+      <line x1="171" y1="477" x2="171" y2="531"/><line x1="187" y1="477" x2="187" y2="531"/>
+      <line x1="203" y1="477" x2="203" y2="531"/><line x1="219" y1="477" x2="219" y2="531"/>
+      <line x1="235" y1="477" x2="235" y2="531"/><line x1="251" y1="477" x2="251" y2="531"/>
+    </g>
+    <line x1="180" y1="438" x2="262" y2="438" stroke="#1c211c" stroke-width="2" marker-end="url(#arr)"/>
+    <text x="221" y="430" font-size="13" text-anchor="middle">UP → 2nd floor</text>
+    <line x1="180" y1="506" x2="262" y2="506" stroke="#1c211c" stroke-width="2" marker-end="url(#arr)"/>
+    <text x="221" y="524" font-size="13" text-anchor="middle">DN → basement</text>
+    <!-- stairwell door, 2 ft 8 in, NE corner of shaft -->
+    <line x1="254" y1="405" x2="294" y2="405" stroke="#fff" stroke-width="6"/>
+    <path d="M254 405 A 40 40 0 0 1 294 365" fill="none" stroke="#1c211c" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <line x1="254" y1="405" x2="286" y2="372" stroke="#1c211c" stroke-width="3"/>
+    <text x="178" y="395" font-size="13" text-anchor="middle">STAIRWELL ≈ 13.5 × 8 ft</text>
+
+    <!-- ======= bathroom rough-in (dashed outline) ======= -->
+    <rect x="358" y="424" width="112" height="112" fill="none" stroke="#1c211c" stroke-width="2.5" stroke-dasharray="9 6"/>
+    <text x="414" y="416" font-size="13" text-anchor="middle">3/4 BATH ROUGH-IN ≈ 7 × 7 ft</text>
+    <!-- shower, west end -->
+    <rect x="358" y="424" width="51" height="51" fill="#dce8e2" stroke="#1c211c" stroke-width="2"/>
+    <text x="383" y="452" font-size="11" text-anchor="middle">SHOWER</text>
+    <!-- lav + WC on the south side, as drawn on C7 -->
+    <ellipse cx="382" cy="517" rx="14" ry="10" fill="none" stroke="#1c211c" stroke-width="2"/>
+    <text x="382" y="540" font-size="11" text-anchor="middle">LAV</text>
+    <g stroke="#1c211c" stroke-width="2" fill="none">
+      <rect x="418" y="508" width="26" height="14" rx="7"/>
+      <rect x="424" y="522" width="14" height="8"/>
+    </g>
+    <text x="431" y="540" font-size="11" text-anchor="middle">WC</text>
+    <!-- bathroom door, south wall east end -->
+    <line x1="430" y1="536" x2="470" y2="536" stroke="#fff" stroke-width="6"/>
+    <path d="M430 536 A 40 40 0 0 1 470 576" fill="none" stroke="#1c211c" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <line x1="430" y1="536" x2="462" y2="570" stroke="#1c211c" stroke-width="3"/>
+
+    <!-- ======= mechanicals ======= -->
+    <rect x="438" y="352" width="48" height="43" fill="#e8e6df" stroke="#1c211c" stroke-width="2"/>
+    <line x1="438" y1="352" x2="486" y2="395" stroke="#1c211c" stroke-width="1.5"/>
+    <line x1="486" y1="352" x2="438" y2="395" stroke="#1c211c" stroke-width="1.5"/>
+    <text x="462" y="414" font-size="12" text-anchor="middle">FURNACE</text>
+    <circle cx="590" cy="432" r="15" fill="#e8e6df" stroke="#1c211c" stroke-width="2"/>
+    <circle cx="590" cy="464" r="15" fill="#e8e6df" stroke="#1c211c" stroke-width="2"/>
+    <circle cx="590" cy="496" r="12" fill="#dce4ea" stroke="#1c211c" stroke-width="2"/>
+    <text x="590" y="530" font-size="12" text-anchor="middle">2× WH + SOFTENER</text>
+    <text x="590" y="546" font-size="11" text-anchor="middle">along east wall</text>
+
+    <!-- ======= sump, panel, duct ======= -->
+    <circle cx="97" cy="722" r="14" fill="none" stroke="#1c211c" stroke-width="2"/>
+    <text x="97" y="726" font-size="11" text-anchor="middle">SUMP</text>
+    <rect x="70" y="584" width="9" height="18" fill="#1c211c"/>
+    <text x="86" y="599" font-size="11">200A PANEL</text>
+    <!-- exhaust duct: fan in bathroom, one joist bay east to the rim joist -->
+    <circle cx="406" cy="496" r="7" fill="#d8622a" stroke="#1c211c" stroke-width="1.5"/>
+    <line x1="406" y1="496" x2="614" y2="496" stroke="#d8622a" stroke-width="3" stroke-dasharray="10 6"/>
+    <rect x="608" y="488" width="10" height="16" fill="#d8622a" stroke="#1c211c" stroke-width="1.5"/>
+    <text x="510" y="484" font-size="12" text-anchor="middle" fill="#a34d1c">EXHAUST DUCT — 4 in rigid, ≈13 ft, one joist bay east</text>
+
+    <!-- ======= area labels ======= -->
+    <text x="342" y="660" font-size="15" text-anchor="middle">BASEMENT 34 × 40 ft</text>
+    <text x="806" y="500" font-size="15" text-anchor="middle">GARAGE — UNEXCAVATED</text>
+    <text x="342" y="830" font-size="12" text-anchor="middle">UNEXCAVATED (under front porch)</text>
+    <text x="465" y="96" font-size="13" text-anchor="middle">bay bump-out ≈ 14 ft wide, projects ≈ 4 ft 3 in</text>
+    <!-- north arrow + scale -->
+    <g>
+      <line x1="990" y1="60" x2="990" y2="20" stroke="#1c211c" stroke-width="2" marker-end="url(#arr)"/>
+      <text x="990" y="76" font-size="12" text-anchor="middle">N</text>
+    </g>
+    <g>
+      <line x1="70" y1="905" x2="150" y2="905" stroke="#1c211c" stroke-width="3"/>
+      <line x1="70" y1="900" x2="70" y2="910" stroke="#1c211c" stroke-width="2"/>
+      <line x1="150" y1="900" x2="150" y2="910" stroke="#1c211c" stroke-width="2"/>
+      <text x="110" y="898" font-size="11" text-anchor="middle">5 ft</text>
+    </g>
+  </svg>
+  </div>
+
+  <div class="notes">
+    <h2>What this drawing is</h2>
+    <ul>
+      <li>Basement shell 34 × 40 ft, from the printed dimensions on C7. Front (north) wall has the bay bump-out; garage sits unexcavated to the east; the strip south of the basement is unexcavated.</li>
+      <li>Stairwell on the west side, roughly mid-depth (north wall ≈ 18 ft from the north wall of the basement). Two flights side by side, both running <b>east–west</b>: the north flight goes UP to the second floor, the south flight comes DN to the basement. You step off the DN flight at the west end, by the west wall.</li>
+      <li>Bathroom rough-in in the middle of the room, just east of the stairs: ≈ 7 × 7 ft, west wall ≈ 18 ft from the west wall. Lav and WC are drawn on the <b>south</b> side on C7; shower goes at the west end.</li>
+      <li>Mechanicals: furnace just north of the bathroom (≈ 23–26 ft from the west wall); two water heaters + softener in a column along the east wall (≈ 19–25 ft from the north wall). Sump in the southwest corner; 200A panel on the west wall south of the stairs.</li>
+      <li>Steel posts (K): two north–south beam lines at ≈ 10 ft and ≈ 26.5 ft from the west wall, posts near the north and south ends, plus one post just outside the bathroom's northwest corner and one just east of the bathroom's northeast corner.</li>
+    </ul>
+    <h2>What was wrong in the old 3D model</h2>
+    <ul>
+      <li>Stairs ran <b>north–south along the west wall</b> as a single flight. On C7 they run east–west as a double flight.</li>
+      <li>Bathroom sat at the west side (x ≈ 3.5–13 ft), overlapping where the stairwell actually is. On C7 it is in the middle of the room (x ≈ 18–25 ft).</li>
+      <li>Water heater, softener and furnace were all too far west and too far north; they belong along the east wall and just north of the bathroom.</li>
+      <li>Beams were at x ≈ 13 and 23 ft; the post lines on C7 sit at ≈ 10 and 26.5 ft. The old model also had six posts in a neat 2×3 grid; C7 has six posts but not in a grid.</li>
+      <li>The duct run was ≈ 25 ft because the bathroom was in the wrong place. From the corrected bathroom the fan-to-rim-joist run is ≈ 13 ft — the buy list drops from six 5-ft sections to three.</li>
+    </ul>
+  </div>
+  <div class="warn"><b>Check this before trusting the 3D:</b> the 3D model on this page's sibling link is rebuilt from these same coordinates. If anything on this 2D still looks off — especially the stairwell, the bathroom, or the post by the bathroom's northwest corner (it lands just outside the room, in the hall) — say so and the fix is a coordinate change here first, then the 3D follows.</div>
+</main>
+</body>
+</html>
